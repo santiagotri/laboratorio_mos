@@ -1,0 +1,16 @@
+B 3 C o m p i l a t i o n
+B 90 Equation Listing    SOLVE model1 Using MIP From line 73
+D 93 objectiveFunction
+D 98 allCovered
+B 110 Column Listing      SOLVE model1 Using MIP From line 73
+E 113 x
+E 143 z
+B 151 Model Statistics    SOLVE model1 Using MIP From line 73
+B 164 Solution Report     SOLVE model1 Using MIP From line 73
+F 184 objectiveFunction
+F 188 allCovered
+G 205 x
+G 224 z
+B 234 E x e c u t i o n
+I 234 x
+I 241 z

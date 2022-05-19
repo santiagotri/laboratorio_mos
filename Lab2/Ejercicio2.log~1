@@ -1,0 +1,95 @@
+--- Job Ejercicio2.gms Start 03/16/22 13:43:46 37.1.0 r07954d5 DEX-DEG x86 64bit/Mac OS X
+--- Applying:
+    /Library/Frameworks/GAMS.framework/Versions/37/Resources/gmsprmun.txt
+    /Users/Gabriel/Library/Preferences/GAMS/gamsconfig.yaml
+--- GAMS Parameters defined
+    Input /Users/Gabriel/Documents/Optimizacion/Laboratios/Lab2/Ejercicio2.gms
+    PageSize 0
+    ScrDir /Users/Gabriel/Documents/Optimizacion/Laboratios/Lab2/225a/
+    SysDir /Library/Frameworks/GAMS.framework/Versions/37/Resources/
+    LogOption 3
+    ErrMsg 1
+    ErrorLog 99
+    IDE 1
+    LstTitleLeftAligned 1
+Licensee: GAMS Community License for Gabriel Beltran     G220127|0002AO-GEN
+          Universidad de los Andes, Computer Science                 CL2376
+          /Users/Gabriel/Library/Application Support/GAMS/gamslice.txt
+          Gabriel Beltran, g.beltranl@uniandes.edu.co                      
+          Community license for demonstration and instructional purposes only
+Processor information: 1 socket(s), 2 core(s), and 4 thread(s) available
+GAMS 37.1.0   Copyright (C) 1987-2021 GAMS Development. All rights reserved
+--- Starting compilation
+--- Ejercicio2.gms(106) 3 Mb
+--- Starting execution: elapsed 0:00:00.008
+--- Ejercicio2.gms(98) 4 Mb
+--- Generating MIP model model1
+--- Ejercicio2.gms(99) 4 Mb
+---   482 rows  393 columns  1,913 non-zeroes
+---   392 discrete-columns
+--- Executing SCIP (Solvelink=2): elapsed 0:00:00.023
+
+SCIP             37.1.0 r07954d5 Released Nov 11, 2021 DEG x86 64bit/Mac OS X 
+SCIP version 7.0 (b2afa5403b)
+Copyright (C) 2002-2021 Konrad-Zuse-Zentrum fuer Informationstechnik Berlin (ZIB)
+
+External libraries: 
+  SoPlex 5.0.3         Linear Programming Solver developed at Zuse Institute Berlin (soplex.zib.de) [GitHash: ad7592b9]
+  CppAD 20180000.0     Algorithmic Differentiation of C++ algorithms developed by B. Bell (www.coin-or.org/CppAD)
+  PaPILO 1.0.2         parallel presolve for integer and linear optimization (https://github.com/scipopt/papilo)
+  bliss 0.73p          Computing Graph Automorphism Groups by T. Junttila and P. Kaski (http://www.tcs.hut.fi/Software/bliss/)
+  Ipopt 3.14.3         Interior Point Optimizer developed by A. Waechter et.al. (www.coin-or.org/Ipopt)
+  HSL MA27 and MC19    Harwell Subroutine Libraries (www.hsl.rl.ac.uk) from commercially supported Ipopt
+non-default parameter settings:
+limits/time = 10000000000
+limits/gap = 0.0001
+lp/threads = 1
+misc/printreason = FALSE
+display/nfrac/active = 2
+
+original problem has 392 variables (392 bin, 0 int, 0 cont) and 481 constraints
+
+all 1 solutions given by solution candidate storage are infeasible
+
+presolving:
+(round 1, fast)       216 del vars, 243 del conss, 0 add conss, 120 chg bounds, 0 chg sides, 0 chg coeffs, 0 upgd conss, 0 impls, 104 clqs
+(round 2, fast)       232 del vars, 259 del conss, 0 add conss, 120 chg bounds, 0 chg sides, 0 chg coeffs, 0 upgd conss, 0 impls, 88 clqs
+   (0.0s) running MILP presolver
+   (0.0s) MILP presolver (2 rounds): 0 aggregations, 0 fixings, 0 bound changes
+(round 3, medium)     232 del vars, 481 del conss, 134 add conss, 120 chg bounds, 0 chg sides, 0 chg coeffs, 0 upgd conss, 0 impls, 88 clqs
+(round 4, exhaustive) 232 del vars, 481 del conss, 134 add conss, 120 chg bounds, 0 chg sides, 0 chg coeffs, 110 upgd conss, 0 impls, 88 clqs
+   (0.0s) probing: 131/160 (81.9%) - 0 fixings, 0 aggregations, 16 implications, 0 bound changes
+   (0.0s) probing aborted: 50/50 successive totally useless probings
+   (0.0s) symmetry computation started: requiring (bin +, int -, cont +), (fixed: bin -, int +, cont -)
+   (0.0s) symmetry computation finished: 5 generators found (max: 1500, log10 of symmetry group size: 1.5)
+presolving (5 rounds: 5 fast, 3 medium, 2 exhaustive):
+ 232 deleted vars, 481 deleted constraints, 134 added constraints, 120 tightened bounds, 0 added holes, 0 changed sides, 0 changed coefficients
+ 0 implications, 104 cliques
+presolved problem has 160 variables (160 bin, 0 int, 0 impl, 0 cont) and 134 constraints
+     22 constraints of type <knapsack>
+     88 constraints of type <setppc>
+     24 constraints of type <linear>
+transformed objective value is always integral (scale: 1)
+Presolving Time: 0.02
+
+ time | node  | left  |LP iter|LP it/n|mem/heur|mdpt |frac |vars |cons |cuts |sepa|confs|strbr|  dualbound   | primalbound  |  gap   | compl. 
+p 0.0s|     1 |     0 |     0 |     - |   locks|   0 |   - | 160 | 135 |   0 |  0 |   0 |   0 | 1.600000e+01 | 3.100000e+01 |  93.75%| unknown
+* 0.0s|     1 |     0 |    28 |     - |    LP  |   0 |   - | 160 | 154 |   0 |  0 |  20 |   0 | 2.000000e+01 | 2.000000e+01 |   0.00%| unknown
+  0.0s|     1 |     0 |    28 |     - |  4957k |   0 |   - | 160 | 154 |   0 |  0 |  20 |   0 | 2.000000e+01 | 2.000000e+01 |   0.00%| unknown
+
+SCIP Status        : problem is solved [optimal solution found]
+Solving Time (sec) : 0.03
+Solving Nodes      : 1
+Primal Bound       : +2.00000000000000e+01 (2 solutions)
+Dual Bound         : +2.00000000000000e+01
+Gap                : 0.00 %
+
+
+--- Reading solution for model model1
+***
+*** Solver did not provide marginals for model model1
+***
+--- Executing after solve: elapsed 0:00:00.456
+--- Ejercicio2.gms(104) 4 Mb
+*** Status: Normal completion
+--- Job Ejercicio2.gms Stop 03/16/22 13:43:47 elapsed 0:00:00.456

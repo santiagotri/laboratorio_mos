@@ -1,0 +1,102 @@
+
+--- Job Ejercicio3.gms Start 03/16/22 15:16:34 37.1.0 r07954d5 DEX-DEG x86 64bit/Mac OS X
+--- Applying:
+    /Library/Frameworks/GAMS.framework/Versions/37/Resources/gmsprmun.txt
+    /Users/Gabriel/Library/Preferences/GAMS/gamsconfig.yaml
+--- GAMS Parameters defined
+    Input /Users/Gabriel/Documents/Optimizacion/Laboratios/Lab2/Ejercicio3.gms
+    PageSize 0
+    ScrDir /Users/Gabriel/Documents/Optimizacion/Laboratios/Lab2/225a/
+    SysDir /Library/Frameworks/GAMS.framework/Versions/37/Resources/
+    LogOption 3
+    ErrMsg 1
+    ErrorLog 99
+    IDE 1
+    LstTitleLeftAligned 1
+Licensee: GAMS Community License for Gabriel Beltran     G220127|0002AO-GEN
+          Universidad de los Andes, Computer Science                 CL2376
+          /Users/Gabriel/Library/Application Support/GAMS/gamslice.txt
+          Gabriel Beltran, g.beltranl@uniandes.edu.co                      
+          Community license for demonstration and instructional purposes only
+Processor information: 1 socket(s), 2 core(s), and 4 thread(s) available
+GAMS 37.1.0   Copyright (C) 1987-2021 GAMS Development. All rights reserved
+--- Starting compilation
+--- Ejercicio3.gms(83) 3 Mb
+--- Starting execution: elapsed 0:00:00.005
+--- Ejercicio3.gms(75) 4 Mb
+--- Generating MIP model model1
+--- Ejercicio3.gms(76) 4 Mb
+---   13 rows  13 columns  75 non-zeroes
+---   12 discrete-columns
+--- Executing SCIP (Solvelink=2): elapsed 0:00:00.023
+
+SCIP             37.1.0 r07954d5 Released Nov 11, 2021 DEG x86 64bit/Mac OS X 
+SCIP version 7.0 (b2afa5403b)
+Copyright (C) 2002-2021 Konrad-Zuse-Zentrum fuer Informationstechnik Berlin (ZIB)
+
+External libraries: 
+  SoPlex 5.0.3         Linear Programming Solver developed at Zuse Institute Berlin (soplex.zib.de) [GitHash: ad7592b9]
+  CppAD 20180000.0     Algorithmic Differentiation of C++ algorithms developed by B. Bell (www.coin-or.org/CppAD)
+  PaPILO 1.0.2         parallel presolve for integer and linear optimization (https://github.com/scipopt/papilo)
+  bliss 0.73p          Computing Graph Automorphism Groups by T. Junttila and P. Kaski (http://www.tcs.hut.fi/Software/bliss/)
+  Ipopt 3.14.3         Interior Point Optimizer developed by A. Waechter et.al. (www.coin-or.org/Ipopt)
+  HSL MA27 and MC19    Harwell Subroutine Libraries (www.hsl.rl.ac.uk) from commercially supported Ipopt
+non-default parameter settings:
+limits/time = 10000000000
+limits/gap = 0.0001
+lp/threads = 1
+misc/printreason = FALSE
+display/nfrac/active = 2
+
+original problem has 12 variables (12 bin, 0 int, 0 cont) and 12 constraints
+
+all 1 solutions given by solution candidate storage are infeasible
+
+feasible solution found by trivial heuristic after 0.0 seconds, objective value 1.200000e+01
+presolving:
+   (0.0s) running MILP presolver
+   (0.0s) MILP presolver found nothing
+(round 1, exhaustive) 0 del vars, 4 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 0 chg coeffs, 0 upgd conss, 0 impls, 0 clqs
+   (0.0s) running MILP presolver
+   (0.0s) MILP presolver found nothing
+(round 2, exhaustive) 0 del vars, 4 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 0 chg coeffs, 8 upgd conss, 0 impls, 0 clqs
+(round 3, fast)       1 del vars, 4 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 0 chg coeffs, 8 upgd conss, 0 impls, 0 clqs
+(round 4, fast)       1 del vars, 4 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 1 chg coeffs, 8 upgd conss, 0 impls, 1 clqs
+(round 5, exhaustive) 1 del vars, 5 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 1 chg coeffs, 8 upgd conss, 0 impls, 1 clqs
+(round 6, fast)       3 del vars, 5 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 1 chg coeffs, 8 upgd conss, 0 impls, 0 clqs
+(round 7, fast)       5 del vars, 8 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 2 chg coeffs, 8 upgd conss, 0 impls, 0 clqs
+(round 8, fast)       7 del vars, 8 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 3 chg coeffs, 8 upgd conss, 0 impls, 0 clqs
+(round 9, fast)       7 del vars, 8 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 5 chg coeffs, 8 upgd conss, 0 impls, 0 clqs
+   (0.0s) running MILP presolver
+   (0.0s) MILP presolver found nothing
+(round 10, exhaustive) 10 del vars, 8 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 5 chg coeffs, 8 upgd conss, 0 impls, 0 clqs
+(round 11, fast)       11 del vars, 10 del conss, 0 add conss, 0 chg bounds, 4 chg sides, 11 chg coeffs, 8 upgd conss, 0 impls, 0 clqs
+   (0.0s) probing cycle finished: starting next cycle
+   (0.0s) symmetry computation started: requiring (bin +, int -, cont +), (fixed: bin -, int +, cont -)
+   (0.0s) no symmetry present
+presolving (12 rounds: 12 fast, 5 medium, 5 exhaustive):
+ 11 deleted vars, 12 deleted constraints, 0 added constraints, 0 tightened bounds, 0 added holes, 4 changed sides, 11 changed coefficients
+ 0 implications, 0 cliques
+presolved problem has 2 variables (2 bin, 0 int, 0 impl, 0 cont) and 0 constraints
+transformed objective value is always integral (scale: 1)
+Presolving Time: 0.01
+
+ time | node  | left  |LP iter|LP it/n|mem/heur|mdpt |frac |vars |cons |cuts |sepa|confs|strbr|  dualbound   | primalbound  |  gap   | compl. 
+t 0.0s|     1 |     0 |     0 |     - | trivial|   0 |   - |   2 |   0 |   0 |  0 |   0 |   0 | 2.000000e+00 | 2.000000e+00 |   0.00%| unknown
+
+SCIP Status        : problem is solved [optimal solution found]
+Solving Time (sec) : 0.02
+Solving Nodes      : 1
+Primal Bound       : +2.00000000000000e+00 (2 solutions)
+Dual Bound         : +2.00000000000000e+00
+Gap                : 0.00 %
+
+
+--- Reading solution for model model1
+***
+*** Solver did not provide marginals for model model1
+***
+--- Executing after solve: elapsed 0:00:00.535
+--- Ejercicio3.gms(81) 4 Mb
+*** Status: Normal completion
+--- Job Ejercicio3.gms Stop 03/16/22 15:16:34 elapsed 0:00:00.537

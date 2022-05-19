@@ -1,0 +1,256 @@
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 15:38:46 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+   1  *************************************************************************
+   2  ***                                                                   ***
+   3  ***      Author: Gabriel Beltran                                      ***
+   4  ***      Author: Andres Triana                                        ***
+   5  *************************************************************************
+   6  Sets
+   7    i      zonas /z1*z12/
+   8  alias(j,i)
+   9  Parameter c(i,j) link cost;
+  10  c(i,j)=999;
+  11  *Costos Grafo Dirigido.
+  12  c('z1','z3')=1;
+  13  c('z1','z2')=1;
+  14  c('z1','z5')=1;
+  15  c('z3','z4')=1;
+  16  c('z3','z5')=1;
+  17  c('z3','z6')=1;
+  18  c('z3','z7')=1;
+  19  c('z3','z8')=1;
+  20  c('z11','z5')=1;
+  21  c('z11','z4')=1;
+  22  c('z11','z6')=1;
+  23  c('z11','z8')=1;
+  24  c('z11','z9')=1;
+  25  c('z11','z10')=1;
+  26  c('z9','z10')=1;
+  27  c('z9','z8')=1;
+  28  c('z9','z12')=1;
+  29  c('z4','z6')=1;
+  30  c('z4','z5')=1;
+  31  c('z10','z5')=1;
+  32  c('z8','z6')=1;
+  33  c('z8','z7')=1;
+  34  c('z7','z12')=1;
+  35  c('z2','z5')=1;
+  36  c('z8','z12')=1;
+  37   
+  38  *Costos Grafo NO Dirigido.
+  39  loop((i,j),
+  40      if (c(i,j)<999,
+  41          c(j,i)=c(i,j);
+  42      );
+  43  );
+  44   
+  45   
+  46   
+  47   
+  48  Variables
+  49  x(i)                     Indicates if the zone i is selected or not.
+  50  z                        Objective function
+  51  ;
+  52   
+  53  Binary Variable x;
+  54   
+  55  Equations
+  56  objectiveFunction                        objective function
+  57   
+  58   
+  59  allCovered(i)                            Todas las zonas son o tienen un vecino cubierto
+  60   
+  61  ;
+  62   
+  63  objectiveFunction       ..      z =e= sum((i), x(i));
+  64   
+  65   
+  66  allCovered(i)           ..      sum((j),x(j)$(c(i,j) = 1))+x(i) =g= 1  ;
+  67   
+  68   
+  69   
+  70  Model model1 /all/ ;
+  71   
+  72  option mip=SCIP;
+  73  Solve model1 using mip minimizing z;
+  74   
+  75   
+  76  Display x.l;
+  77  Display z.l;
+  78   
+  79   
+
+
+COMPILATION TIME     =        0.004 SECONDS      3 MB  37.1.0 r07954d5 DEX-DEG
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 15:38:46 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Equation Listing    SOLVE model1 Using MIP From line 73
+
+
+---- objectiveFunction  =E=  objective function
+
+objectiveFunction..  - x(z1) - x(z2) - x(z3) - x(z4) - x(z5) - x(z6) - x(z7) - x(z8) - x(z9) - x(z10) - x(z11) - x(z12) + z =E= 0 ; (LHS = 0)
+     
+
+---- allCovered  =G=  Todas las zonas son o tienen un vecino cubierto
+
+allCovered(z1)..  x(z1) + x(z2) + x(z3) + x(z5) =G= 1 ; (LHS = 0, INFES = 1 ****)
+     
+allCovered(z2)..  x(z1) + x(z2) + x(z5) =G= 1 ; (LHS = 0, INFES = 1 ****)
+     
+allCovered(z3)..  x(z1) + x(z3) + x(z4) + x(z5) + x(z6) + x(z7) + x(z8) =G= 1 ; (LHS = 0, INFES = 1 ****)
+     
+REMAINING 9 ENTRIES SKIPPED
+
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 15:38:46 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Column Listing      SOLVE model1 Using MIP From line 73
+
+
+---- x  Indicates if the zone i is selected or not.
+
+x(z1)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+       -1       objectiveFunction
+        1       allCovered(z1)
+        1       allCovered(z2)
+        1       allCovered(z3)
+        1       allCovered(z5)
+
+x(z2)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+       -1       objectiveFunction
+        1       allCovered(z1)
+        1       allCovered(z2)
+        1       allCovered(z5)
+
+x(z3)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+       -1       objectiveFunction
+        1       allCovered(z1)
+        1       allCovered(z3)
+        1       allCovered(z4)
+        1       allCovered(z5)
+        1       allCovered(z6)
+        1       allCovered(z7)
+        1       allCovered(z8)
+
+REMAINING 9 ENTRIES SKIPPED
+
+---- z  Objective function
+
+z
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       objectiveFunction
+
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 15:38:46 Page 4
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE model1 Using MIP From line 73
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           2     SINGLE EQUATIONS           13
+BLOCKS OF VARIABLES           2     SINGLE VARIABLES           13
+NON ZERO ELEMENTS            75     DISCRETE VARIABLES         12
+
+
+GENERATION TIME      =        0.014 SECONDS      4 MB  37.1.0 r07954d5 DEX-DEG
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 15:38:46 Page 5
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE model1 Using MIP From line 73
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   model1              OBJECTIVE  z
+     TYPE    MIP                 DIRECTION  MINIMIZE
+     SOLVER  SCIP                FROM LINE  73
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      1 Optimal
+**** OBJECTIVE VALUE                2.0000
+
+ RESOURCE USAGE, LIMIT          0.015 10000000000.000
+ ITERATION COUNT, LIMIT         0    2147483647
+
+SCIP             37.1.0 r07954d5 Released Nov 11, 2021 DEG x86 64bit/Mac OS X 
+
+                           LOWER          LEVEL          UPPER
+
+---- EQU objective~          .              .              .          
+
+  objectiveFunction  objective function
+
+---- EQU allCovered  Todas las zonas son o tienen un vecino cubierto
+
+           LOWER          LEVEL          UPPER
+
+z1          1.0000         1.0000        +INF         
+z2          1.0000         1.0000        +INF         
+z3          1.0000         2.0000        +INF         
+z4          1.0000         1.0000        +INF         
+z5          1.0000         1.0000        +INF         
+z6          1.0000         1.0000        +INF         
+z7          1.0000         1.0000        +INF         
+z8          1.0000         1.0000        +INF         
+z9          1.0000         1.0000        +INF         
+z10         1.0000         1.0000        +INF         
+z11         1.0000         2.0000        +INF         
+z12         1.0000         1.0000        +INF         
+
+---- VAR x  Indicates if the zone i is selected or not.
+
+           LOWER          LEVEL          UPPER
+
+z1           .              .             1.0000      
+z2           .              .             1.0000      
+z3           .              .             1.0000      
+z4           .              .             1.0000      
+z5           .             1.0000         1.0000      
+z6           .              .             1.0000      
+z7           .              .             1.0000      
+z8           .             1.0000         1.0000      
+z9           .              .             1.0000      
+z10          .              .             1.0000      
+z11          .              .             1.0000      
+z12          .              .             1.0000      
+
+                           LOWER          LEVEL          UPPER
+
+---- VAR z                 -INF            2.0000        +INF         
+
+  z  Objective function
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 15:38:46 Page 6
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+E x e c u t i o n
+
+
+----     76 VARIABLE x.L  Indicates if the zone i is selected or not.
+
+z5 1.000,    z8 1.000
+
+
+----     77 VARIABLE z.L                   =        2.000  Objective function
+
+
+EXECUTION TIME       =        0.422 SECONDS      4 MB  37.1.0 r07954d5 DEX-DEG
+
+
+USER: GAMS Community License for Gabriel Beltran     G220127|0002AO-GEN
+      Universidad de los Andes, Computer Science                 CL2376
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      /Users/Gabriel/Documents/Optimizacion/Laboratios/Lab2/Ejercicio3.gms
+Output     /Users/Gabriel/Documents/Optimizacion/Laboratios/Lab2/Ejercicio3.lst

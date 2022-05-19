@@ -1,0 +1,1253 @@
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 13:46:44 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+   1  *************************************************************************
+   2  ***      Finding the minimum cost path in a 1-N network scheme        ***
+   3  ***                                                                   ***
+   4  ***      Author: Gabriel Beltran                                      ***
+   5  ***      Author: Andres Triana                                        ***
+   6  *************************************************************************
+      Modelo 1-N: Se busca construir un path entre n fuentes y n
+       destinos.
+       
+      Si tiene en cuenta servicios.
+      Si tiene en cuenta las capacidades de los enlaces.
+       
+  15   
+  16  Sets
+  17    i      network nodes /n1, n2, n3, n4, n5, n6, n7/
+  18    int(i) intermediate nodes /n3, n4, n5/
+  19    f      types of flows /f1*f2/
+  20    d(i)   destinations /n6, n7/
+  21    o(i)   origins/n1, n2/;
+  22   
+  23  alias(j,i);
+  24   
+  25  parameter destinations(d) gives set values;
+  26  destinations(d) = d.uel;
+  27  parameter origins(o) gives set values;
+  28  origins(o) = o.uel;
+  29  *En destinations se almacenan las posiciones de los nodos destinos con respecto al conjunto i.
+  30   
+  31  Parameter u(i,j) Capacidad del Enlace;
+  32  u(i,j)=0;
+  33   
+  34  Parameter c(i,j) link cost;
+  35  c(i,j)=999;
+  36  *Costos Grafo Dirigido.
+  37  c('n1','n3')=1;
+  38  c('n1','n4')=1;
+  39  c('n2','n3')=1;
+  40  c('n2','n4')=1;
+  41  c('n3','n4')=1;
+  42  c('n3','n5')=1;
+  43  c('n3','n6')=1;
+  44  c('n4','n5')=1;
+  45  c('n4','n7')=1;
+  46  c('n5','n6')=1;
+  47  c('n5','n7')=1;
+  48   
+  49  *Costos Grafo NO Dirigido.
+  50  loop((i,j),
+  51      if (c(i,j)<999,
+  52          c(j,i)=c(i,j);
+  53          u(i,j)=512;
+  54          u(j,i)=512;
+  55      );
+  56  );
+  57   
+  58   
+  59  Parameter  B(f)   Demanda de Ancho de Banda para cada flujo;
+  60  B(f)=256;
+  61   
+  62  Variables
+  63  x(i,j,f,o,d)                     Indicates if the link i-j is selected or not from o to d.
+  64  z                                Objective function
+  65  ;
+  66   
+  67  Binary Variable x;
+  68   
+  69  Equations
+  70  objectiveFunction                        objective function
+  71   
+  72  sourceNode(i,f,o,d)                        Cada flujo tiene un solo origen
+  73   
+  74  destinationNodes(j,f,o,d)                  Cada flujo tiene un solo destino
+  75   
+  76  intermediateNode(int,f,o,d)                intermediate node
+  77   
+  78  capacity(i,j)                            capacity constraint
+  79   
+  80  noRepeatedLink(i,j,f,o,d)                  do not repeat link
+  81  ;
+  82   
+  83  objectiveFunction                                      ..      z =e= sum((i,j,f,o,d), c(i,j) * x(i,j,f,o,d));
+  84   
+  85  sourceNode(i,f,o,d)$(ord(i) = origins(o))              ..      sum((j), x(i,j,f,o,d)) =e= 1;
+  86   
+  87  destinationNodes(j,f,o,d)$(ord(j)=destinations(d))     ..      sum((i), x(i,j,f,o,d)) =e= 1;
+  88   
+  89  intermediateNode(int,f,o,d)                            ..      sum((j), x(int,j,f,o,d)) - sum((j), x(j,int,f,o,d)) =e= 0;
+  90   
+  91  capacity(i,j)                                          ..      sum((f,o,d), B(f)*x(i,j,f,o,d)) =l= u(i,j);
+  92   
+  93  noRepeatedLink(i,j,f,o,d)                              ..      x(i,j,f,o,d) + x(j,i,f,o,d) =l= 1;
+  94   
+  95   
+  96  Model model1 /all/ ;
+  97   
+  98  option mip=SCIP;
+  99  Solve model1 using mip minimizing z;
+ 100   
+ 101   
+ 102   
+ 103  Display x.l;
+ 104  Display z.l;
+ 105   
+ 106   
+
+
+COMPILATION TIME     =        0.001 SECONDS      3 MB  37.1.0 r07954d5 DEX-DEG
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 13:46:44 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Equation Listing    SOLVE model1 Using MIP From line 99
+
+
+---- objectiveFunction  =E=  objective function
+
+objectiveFunction..  - 999*x(n1,n1,f1,n1,n6) - 999*x(n1,n1,f1,n1,n7) - 999*x(n1,n1,f1,n2,n6) - 999*x(n1,n1,f1,n2,n7) - 999*x(n1,n1,f2,n1,n6) - 999*x(n1,n1,f2,n1,n7) - 999*x(n1,n1,f2,n2,n6) - 999*x(n1,n1,f2,n2,n7) - 999*x(n1,n2,f1,n1,n6) - 999*x(n1,n2,f1,n1,n7) - 999*x(n1,n2,f1,n2,n6) - 999*x(n1,n2,f1,n2,n7) - 999*x(n1,n2,f2,n1,n6) - 999*x(n1,n2,f2,n1,n7) - 999*x(n1,n2,f2,n2,n6) - 999*x(n1,n2,f2,n2,n7) - x(n1,n3,f1,n1,n6) - x(n1,n3,f1,n1,n7) - x(n1,n3,f1,n2,n6) - x(n1,n3,f1,n2,n7) - x(n1,n3,f2,n1,n6) - x(n1,n3,f2,n1,n7) - x(n1,n3,f2,n2,n6) - x(n1,n3,f2,n2,n7) - x(n1,n4,f1,n1,n6) - x(n1,n4,f1,n1,n7) - x(n1,n4,f1,n2,n6) - x(n1,n4,f1,n2,n7) - x(n1,n4,f2,n1,n6) - x(n1,n4,f2,n1,n7) - x(n1,n4,f2,n2,n6) - x(n1,n4,f2,n2,n7) - 999*x(n1,n5,f1,n1,n6) - 999*x(n1,n5,f1,n1,n7) - 999*x(n1,n5,f1,n2,n6) - 999*x(n1,n5,f1,n2,n7) - 999*x(n1,n5,f2,n1,n6) - 999*x(n1,n5,f2,n1,n7) - 999*x(n1,n5,f2,n2,n6) - 999*x(n1,n5,f2,n2,n7) - 999*x(n1,n6,f1,n1,n6) - 999*x(n1,n6,f1,n1,n7) - 999*x(n1,n6,f1,n2,n6) - 999*x(n1,n6,f1,n2,n7) - 999*x(n1,n6,f2,n1,n6) - 999*x(n1,n6,f2,n1,n7) - 999*x(n1,n6,f2,n2,n6) - 999*x(n1,n6,f2,n2,n7) - 999*x(n1,n7,f1,n1,n6) - 999*x(n1,n7,f1,n1,n7) - 999*x(n1,n7,f1,n2,n6) - 999*x(n1,n7,f1,n2,n7) - 999*x(n1,n7,f2,n1,n6) - 999*x(n1,n7,f2,n1,n7) - 999*x(n1,n7,f2,n2,n6) - 999*x(n1,n7,f2,n2,n7) - 999*x(n2,n1,f1,n1,n6) - 999*x(n2,n1,f1,n1,n7) - 999*x(n2,n1,f1,n2,n6) - 999*x(n2,n1,f1,n2,n7) - 999*x(n2,n1,f2,n1,n6) - 999*x(n2,n1,f2,n1,n7) - 999*x(n2,n1,f2,n2,n6) - 999*x(n2,n1,f2,n2,n7) - 999*x(n2,n2,f1,n1,n6) - 999*x(n2,n2,f1,n1,n7) - 999*x(n2,n2,f1,n2,n6) - 999*x(n2,n2,f1,n2,n7) - 999*x(n2,n2,f2,n1,n6) - 999*x(n2,n2,f2,n1,n7) - 999*x(n2,n2,f2,n2,n6) - 999*x(n2,n2,f2,n2,n7) - x(n2,n3,f1,n1,n6) - x(n2,n3,f1,n1,n7) - x(n2,n3,f1,n2,n6) - x(n2,n3,f1,n2,n7) - x(n2,n3,f2,n1,n6) - x(n2,n3,f2,n1,n7) - x(n2,n3,f2,n2,n6) - x(n2,n3,f2,n2,n7) - x(n2,n4,f1,n1,n6) - x(n2,n4,f1,n1,n7) - x(n2,n4,f1,n2,n6) - x(n2,n4,f1,n2,n7) - x(n2,n4,f2,n1,n6) - x(n2,n4,f2,n1,n7) - x(n2,n4,f2,n2,n6) - x(n2,n4,f2,n2,n7) - 999*x(n2,n5,f1,n1,n6) - 999*x(n2,n5,f1,n1,n7) - 999*x(n2,n5,f1,n2,n6) - 999*x(n2,n5,f1,n2,n7) - 999*x(n2,n5,f2,n1,n6) - 999*x(n2,n5,f2,n1,n7) - 999*x(n2,n5,f2,n2,n6) - 999*x(n2,n5,f2,n2,n7) - 999*x(n2,n6,f1,n1,n6) - 999*x(n2,n6,f1,n1,n7) - 999*x(n2,n6,f1,n2,n6) - 999*x(n2,n6,f1,n2,n7) - 999*x(n2,n6,f2,n1,n6) - 999*x(n2,n6,f2,n1,n7) - 999*x(n2,n6,f2,n2,n6) - 999*x(n2,n6,f2,n2,n7) - 999*x(n2,n7,f1,n1,n6) - 999*x(n2,n7,f1,n1,n7) - 999*x(n2,n7,f1,n2,n6) - 999*x(n2,n7,f1,n2,n7) - 999*x(n2,n7,f2,n1,n6) - 999*x(n2,n7,f2,n1,n7) - 999*x(n2,n7,f2,n2,n6) - 999*x(n2,n7,f2,n2,n7) - x(n3,n1,f1,n1,n6) - x(n3,n1,f1,n1,n7) - x(n3,n1,f1,n2,n6) - x(n3,n1,f1,n2,n7) - x(n3,n1,f2,n1,n6) - x(n3,n1,f2,n1,n7) - x(n3,n1,f2,n2,n6) - x(n3,n1,f2,n2,n7) - x(n3,n2,f1,n1,n6) - x(n3,n2,f1,n1,n7) - x(n3,n2,f1,n2,n6) - x(n3,n2,f1,n2,n7) - x(n3,n2,f2,n1,n6) - x(n3,n2,f2,n1,n7) - x(n3,n2,f2,n2,n6) - x(n3,n2,f2,n2,n7) - 999*x(n3,n3,f1,n1,n6) - 999*x(n3,n3,f1,n1,n7) - 999*x(n3,n3,f1,n2,n6) - 999*x(n3,n3,f1,n2,n7) - 999*x(n3,n3,f2,n1,n6) - 999*x(n3,n3,f2,n1,n7) - 999*x(n3,n3,f2,n2,n6) - 999*x(n3,n3,f2,n2,n7) - x(n3,n4,f1,n1,n6) - x(n3,n4,f1,n1,n7) - x(n3,n4,f1,n2,n6) - x(n3,n4,f1,n2,n7) - x(n3,n4,f2,n1,n6) - x(n3,n4,f2,n1,n7) - x(n3,n4,f2,n2,n6) - x(n3,n4,f2,n2,n7) - x(n3,n5,f1,n1,n6) - x(n3,n5,f1,n1,n7) - x(n3,n5,f1,n2,n6) - x(n3,n5,f1,n2,n7) - x(n3,n5,f2,n1,n6) - x(n3,n5,f2,n1,n7) - x(n3,n5,f2,n2,n6) - x(n3,n5,f2,n2,n7) - x(n3,n6,f1,n1,n6) - x(n3,n6,f1,n1,n7) - x(n3,n6,f1,n2,n6) - x(n3,n6,f1,n2,n7) - x(n3,n6,f2,n1,n6) - x(n3,n6,f2,n1,n7) - x(n3,n6,f2,n2,n6) - x(n3,n6,f2,n2,n7) - 999*x(n3,n7,f1,n1,n6) - 999*x(n3,n7,f1,n1,n7) - 999*x(n3,n7,f1,n2,n6) - 999*x(n3,n7,f1,n2,n7) - 999*x(n3,n7,f2,n1,n6) - 999*x(n3,n7,f2,n1,n7) - 999*x(n3,n7,f2,n2,n6) - 999*x(n3,n7,f2,n2,n7) - x(n4,n1,f1,n1,n6) - x(n4,n1,f1,n1,n7) - x(n4,n1,f1,n2,n6) - x(n4,n1,f1,n2,n7) - x(n4,n1,f2,n1,n6) - x(n4,n1,f2,n1,n7) - x(n4,n1,f2,n2,n6) - x(n4,n1,f2,n2,n7) - x(n4,n2,f1,n1,n6) - x(n4,n2,f1,n1,n7) - x(n4,n2,f1,n2,n6) - x(n4,n2,f1,n2,n7) - x(n4,n2,f2,n1,n6) - x(n4,n2,f2,n1,n7) - x(n4,n2,f2,n2,n6) - x(n4,n2,f2,n2,n7) - x(n4,n3,f1,n1,n6) - x(n4,n3,f1,n1,n7) - x(n4,n3,f1,n2,n6) - x(n4,n3,f1,n2,n7) - x(n4,n3,f2,n1,n6) - x(n4,n3,f2,n1,n7) - x(n4,n3,f2,n2,n6) - x(n4,n3,f2,n2,n7) - 999*x(n4,n4,f1,n1,n6) - 999*x(n4,n4,f1,n1,n7) - 999*x(n4,n4,f1,n2,n6) - 999*x(n4,n4,f1,n2,n7) - 999*x(n4,n4,f2,n1,n6) - 999*x(n4,n4,f2,n1,n7) - 999*x(n4,n4,f2,n2,n6) - 999*x(n4,n4,f2,n2,n7) - x(n4,n5,f1,n1,n6) - x(n4,n5,f1,n1,n7) - x(n4,n5,f1,n2,n6) - x(n4,n5,f1,n2,n7) - x(n4,n5,f2,n1,n6) - x(n4,n5,f2,n1,n7) - x(n4,n5,f2,n2,n6) - x(n4,n5,f2,n2,n7) - 999*x(n4,n6,f1,n1,n6) - 999*x(n4,n6,f1,n1,n7) - 999*x(n4,n6,f1,n2,n6) - 999*x(n4,n6,f1,n2,n7) - 999*x(n4,n6,f2,n1,n6) - 999*x(n4,n6,f2,n1,n7) - 999*x(n4,n6,f2,n2,n6) - 999*x(n4,n6,f2,n2,n7) - x(n4,n7,f1,n1,n6) - x(n4,n7,f1,n1,n7) - x(n4,n7,f1,n2,n6) - x(n4,n7,f1,n2,n7) - x(n4,n7,f2,n1,n6) - x(n4,n7,f2,n1,n7) - x(n4,n7,f2,n2,n6) - x(n4,n7,f2,n2,n7) - 999*x(n5,n1,f1,n1,n6) - 999*x(n5,n1,f1,n1,n7) - 999*x(n5,n1,f1,n2,n6) - 999*x(n5,n1,f1,n2,n7) - 999*x(n5,n1,f2,n1,n6) - 999*x(n5,n1,f2,n1,n7) - 999*x(n5,n1,f2,n2,n6) - 999*x(n5,n1,f2,n2,n7) - 999*x(n5,n2,f1,n1,n6) - 999*x(n5,n2,f1,n1,n7) - 999*x(n5,n2,f1,n2,n6) - 999*x(n5,n2,f1,n2,n7) - 999*x(n5,n2,f2,n1,n6) - 999*x(n5,n2,f2,n1,n7) - 999*x(n5,n2,f2,n2,n6) - 999*x(n5,n2,f2,n2,n7) - x(n5,n3,f1,n1,n6) - x(n5,n3,f1,n1,n7) - x(n5,n3,f1,n2,n6) - x(n5,n3,f1,n2,n7) - x(n5,n3,f2,n1,n6) - x(n5,n3,f2,n1,n7) - x(n5,n3,f2,n2,n6) - x(n5,n3,f2,n2,n7) - x(n5,n4,f1,n1,n6) - x(n5,n4,f1,n1,n7) - x(n5,n4,f1,n2,n6) - x(n5,n4,f1,n2,n7) - x(n5,n4,f2,n1,n6) - x(n5,n4,f2,n1,n7) - x(n5,n4,f2,n2,n6) - x(n5,n4,f2,n2,n7) - 999*x(n5,n5,f1,n1,n6) - 999*x(n5,n5,f1,n1,n7) - 999*x(n5,n5,f1,n2,n6) - 999*x(n5,n5,f1,n2,n7) - 999*x(n5,n5,f2,n1,n6) - 999*x(n5,n5,f2,n1,n7) - 999*x(n5,n5,f2,n2,n6) - 999*x(n5,n5,f2,n2,n7) - x(n5,n6,f1,n1,n6) - x(n5,n6,f1,n1,n7) - x(n5,n6,f1,n2,n6) - x(n5,n6,f1,n2,n7) - x(n5,n6,f2,n1,n6) - x(n5,n6,f2,n1,n7) - x(n5,n6,f2,n2,n6) - x(n5,n6,f2,n2,n7) - x(n5,n7,f1,n1,n6) - x(n5,n7,f1,n1,n7) - x(n5,n7,f1,n2,n6) - x(n5,n7,f1,n2,n7) - x(n5,n7,f2,n1,n6) - x(n5,n7,f2,n1,n7) - x(n5,n7,f2,n2,n6) - x(n5,n7,f2,n2,n7) - 999*x(n6,n1,f1,n1,n6) - 999*x(n6,n1,f1,n1,n7) - 999*x(n6,n1,f1,n2,n6) - 999*x(n6,n1,f1,n2,n7) - 999*x(n6,n1,f2,n1,n6) - 999*x(n6,n1,f2,n1,n7) - 999*x(n6,n1,f2,n2,n6) - 999*x(n6,n1,f2,n2,n7) - 999*x(n6,n2,f1,n1,n6) - 999*x(n6,n2,f1,n1,n7) - 999*x(n6,n2,f1,n2,n6) - 999*x(n6,n2,f1,n2,n7) - 999*x(n6,n2,f2,n1,n6) - 999*x(n6,n2,f2,n1,n7) - 999*x(n6,n2,f2,n2,n6) - 999*x(n6,n2,f2,n2,n7) - x(n6,n3,f1,n1,n6) - x(n6,n3,f1,n1,n7) - x(n6,n3,f1,n2,n6) - x(n6,n3,f1,n2,n7) - x(n6,n3,f2,n1,n6) - x(n6,n3,f2,n1,n7) - x(n6,n3,f2,n2,n6) - x(n6,n3,f2,n2,n7) - 999*x(n6,n4,f1,n1,n6) - 999*x(n6,n4,f1,n1,n7) - 999*x(n6,n4,f1,n2,n6) - 999*x(n6,n4,f1,n2,n7) - 999*x(n6,n4,f2,n1,n6) - 999*x(n6,n4,f2,n1,n7) - 999*x(n6,n4,f2,n2,n6) - 999*x(n6,n4,f2,n2,n7) - x(n6,n5,f1,n1,n6) - x(n6,n5,f1,n1,n7) - x(n6,n5,f1,n2,n6) - x(n6,n5,f1,n2,n7) - x(n6,n5,f2,n1,n6) - x(n6,n5,f2,n1,n7) - x(n6,n5,f2,n2,n6) - x(n6,n5,f2,n2,n7) - 999*x(n6,n6,f1,n1,n6) - 999*x(n6,n6,f1,n1,n7) - 999*x(n6,n6,f1,n2,n6) - 999*x(n6,n6,f1,n2,n7) - 999*x(n6,n6,f2,n1,n6) - 999*x(n6,n6,f2,n1,n7) - 999*x(n6,n6,f2,n2,n6) - 999*x(n6,n6,f2,n2,n7) - 999*x(n6,n7,f1,n1,n6) - 999*x(n6,n7,f1,n1,n7) - 999*x(n6,n7,f1,n2,n6) - 999*x(n6,n7,f1,n2,n7) - 999*x(n6,n7,f2,n1,n6) - 999*x(n6,n7,f2,n1,n7) - 999*x(n6,n7,f2,n2,n6) - 999*x(n6,n7,f2,n2,n7) - 999*x(n7,n1,f1,n1,n6) - 999*x(n7,n1,f1,n1,n7) - 999*x(n7,n1,f1,n2,n6) - 999*x(n7,n1,f1,n2,n7) - 999*x(n7,n1,f2,n1,n6) - 999*x(n7,n1,f2,n1,n7) - 999*x(n7,n1,f2,n2,n6) - 999*x(n7,n1,f2,n2,n7) - 999*x(n7,n2,f1,n1,n6) - 999*x(n7,n2,f1,n1,n7) - 999*x(n7,n2,f1,n2,n6) - 999*x(n7,n2,f1,n2,n7) - 999*x(n7,n2,f2,n1,n6) - 999*x(n7,n2,f2,n1,n7) - 999*x(n7,n2,f2,n2,n6) - 999*x(n7,n2,f2,n2,n7) - 999*x(n7,n3,f1,n1,n6) - 999*x(n7,n3,f1,n1,n7) - 999*x(n7,n3,f1,n2,n6) - 999*x(n7,n3,f1,n2,n7) - 999*x(n7,n3,f2,n1,n6) - 999*x(n7,n3,f2,n1,n7) - 999*x(n7,n3,f2,n2,n6) - 999*x(n7,n3,f2,n2,n7) - x(n7,n4,f1,n1,n6) - x(n7,n4,f1,n1,n7) - x(n7,n4,f1,n2,n6) - x(n7,n4,f1,n2,n7) - x(n7,n4,f2,n1,n6) - x(n7,n4,f2,n1,n7) - x(n7,n4,f2,n2,n6) - x(n7,n4,f2,n2,n7) - x(n7,n5,f1,n1,n6) - x(n7,n5,f1,n1,n7) - x(n7,n5,f1,n2,n6) - x(n7,n5,f1,n2,n7) - x(n7,n5,f2,n1,n6) - x(n7,n5,f2,n1,n7) - x(n7,n5,f2,n2,n6) - x(n7,n5,f2,n2,n7) - 999*x(n7,n6,f1,n1,n6) - 999*x(n7,n6,f1,n1,n7) - 999*x(n7,n6,f1,n2,n6) - 999*x(n7,n6,f1,n2,n7) - 999*x(n7,n6,f2,n1,n6) - 999*x(n7,n6,f2,n1,n7) - 999*x(n7,n6,f2,n2,n6) - 999*x(n7,n6,f2,n2,n7) - 999*x(n7,n7,f1,n1,n6) - 999*x(n7,n7,f1,n1,n7) - 999*x(n7,n7,f1,n2,n6) - 999*x(n7,n7,f1,n2,n7) - 999*x(n7,n7,f2,n1,n6) - 999*x(n7,n7,f2,n1,n7) - 999*x(n7,n7,f2,n2,n6) - 999*x(n7,n7,f2,n2,n7) + z =E= 0 ; (LHS = 0)
+     
+
+---- sourceNode  =E=  Cada flujo tiene un solo origen
+
+sourceNode(n1,f1,n1,n6)..  x(n1,n1,f1,n1,n6) + x(n1,n2,f1,n1,n6) + x(n1,n3,f1,n1,n6) + x(n1,n4,f1,n1,n6) + x(n1,n5,f1,n1,n6) + x(n1,n6,f1,n1,n6) + x(n1,n7,f1,n1,n6) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+sourceNode(n1,f1,n1,n7)..  x(n1,n1,f1,n1,n7) + x(n1,n2,f1,n1,n7) + x(n1,n3,f1,n1,n7) + x(n1,n4,f1,n1,n7) + x(n1,n5,f1,n1,n7) + x(n1,n6,f1,n1,n7) + x(n1,n7,f1,n1,n7) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+sourceNode(n1,f2,n1,n6)..  x(n1,n1,f2,n1,n6) + x(n1,n2,f2,n1,n6) + x(n1,n3,f2,n1,n6) + x(n1,n4,f2,n1,n6) + x(n1,n5,f2,n1,n6) + x(n1,n6,f2,n1,n6) + x(n1,n7,f2,n1,n6) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+REMAINING 5 ENTRIES SKIPPED
+
+
+---- destinationNodes  =E=  Cada flujo tiene un solo destino
+
+destinationNodes(n6,f1,n1,n6)..  x(n1,n6,f1,n1,n6) + x(n2,n6,f1,n1,n6) + x(n3,n6,f1,n1,n6) + x(n4,n6,f1,n1,n6) + x(n5,n6,f1,n1,n6) + x(n6,n6,f1,n1,n6) + x(n7,n6,f1,n1,n6) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+destinationNodes(n6,f1,n2,n6)..  x(n1,n6,f1,n2,n6) + x(n2,n6,f1,n2,n6) + x(n3,n6,f1,n2,n6) + x(n4,n6,f1,n2,n6) + x(n5,n6,f1,n2,n6) + x(n6,n6,f1,n2,n6) + x(n7,n6,f1,n2,n6) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+destinationNodes(n6,f2,n1,n6)..  x(n1,n6,f2,n1,n6) + x(n2,n6,f2,n1,n6) + x(n3,n6,f2,n1,n6) + x(n4,n6,f2,n1,n6) + x(n5,n6,f2,n1,n6) + x(n6,n6,f2,n1,n6) + x(n7,n6,f2,n1,n6) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+REMAINING 5 ENTRIES SKIPPED
+
+
+---- intermediateNode  =E=  intermediate node
+
+intermediateNode(n3,f1,n1,n6)..  - x(n1,n3,f1,n1,n6) - x(n2,n3,f1,n1,n6) + x(n3,n1,f1,n1,n6) + x(n3,n2,f1,n1,n6) + x(n3,n4,f1,n1,n6) + x(n3,n5,f1,n1,n6) + x(n3,n6,f1,n1,n6) + x(n3,n7,f1,n1,n6) - x(n4,n3,f1,n1,n6) - x(n5,n3,f1,n1,n6) - x(n6,n3,f1,n1,n6) - x(n7,n3,f1,n1,n6) =E= 0 ; (LHS = 0)
+     
+intermediateNode(n3,f1,n1,n7)..  - x(n1,n3,f1,n1,n7) - x(n2,n3,f1,n1,n7) + x(n3,n1,f1,n1,n7) + x(n3,n2,f1,n1,n7) + x(n3,n4,f1,n1,n7) + x(n3,n5,f1,n1,n7) + x(n3,n6,f1,n1,n7) + x(n3,n7,f1,n1,n7) - x(n4,n3,f1,n1,n7) - x(n5,n3,f1,n1,n7) - x(n6,n3,f1,n1,n7) - x(n7,n3,f1,n1,n7) =E= 0 ; (LHS = 0)
+     
+intermediateNode(n3,f1,n2,n6)..  - x(n1,n3,f1,n2,n6) - x(n2,n3,f1,n2,n6) + x(n3,n1,f1,n2,n6) + x(n3,n2,f1,n2,n6) + x(n3,n4,f1,n2,n6) + x(n3,n5,f1,n2,n6) + x(n3,n6,f1,n2,n6) + x(n3,n7,f1,n2,n6) - x(n4,n3,f1,n2,n6) - x(n5,n3,f1,n2,n6) - x(n6,n3,f1,n2,n6) - x(n7,n3,f1,n2,n6) =E= 0 ; (LHS = 0)
+     
+REMAINING 21 ENTRIES SKIPPED
+
+
+---- capacity  =L=  capacity constraint
+
+capacity(n1,n1)..  256*x(n1,n1,f1,n1,n6) + 256*x(n1,n1,f1,n1,n7) + 256*x(n1,n1,f1,n2,n6) + 256*x(n1,n1,f1,n2,n7) + 256*x(n1,n1,f2,n1,n6) + 256*x(n1,n1,f2,n1,n7) + 256*x(n1,n1,f2,n2,n6) + 256*x(n1,n1,f2,n2,n7) =L= 0 ; (LHS = 0)
+     
+capacity(n1,n2)..  256*x(n1,n2,f1,n1,n6) + 256*x(n1,n2,f1,n1,n7) + 256*x(n1,n2,f1,n2,n6) + 256*x(n1,n2,f1,n2,n7) + 256*x(n1,n2,f2,n1,n6) + 256*x(n1,n2,f2,n1,n7) + 256*x(n1,n2,f2,n2,n6) + 256*x(n1,n2,f2,n2,n7) =L= 0 ; (LHS = 0)
+     
+capacity(n1,n3)..  256*x(n1,n3,f1,n1,n6) + 256*x(n1,n3,f1,n1,n7) + 256*x(n1,n3,f1,n2,n6) + 256*x(n1,n3,f1,n2,n7) + 256*x(n1,n3,f2,n1,n6) + 256*x(n1,n3,f2,n1,n7) + 256*x(n1,n3,f2,n2,n6) + 256*x(n1,n3,f2,n2,n7) =L= 512 ; (LHS = 0)
+     
+REMAINING 46 ENTRIES SKIPPED
+
+
+---- noRepeatedLink  =L=  do not repeat link
+
+noRepeatedLink(n1,n1,f1,n1,n6)..  2*x(n1,n1,f1,n1,n6) =L= 1 ; (LHS = 0)
+     
+noRepeatedLink(n1,n1,f1,n1,n7)..  2*x(n1,n1,f1,n1,n7) =L= 1 ; (LHS = 0)
+     
+noRepeatedLink(n1,n1,f1,n2,n6)..  2*x(n1,n1,f1,n2,n6) =L= 1 ; (LHS = 0)
+     
+REMAINING 389 ENTRIES SKIPPED
+
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 13:46:44 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Column Listing      SOLVE model1 Using MIP From line 99
+
+
+---- x  Indicates if the link i-j is selected or not from o to d.
+
+x(n1,n1,f1,n1,n6)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+     -999       objectiveFunction
+        1       sourceNode(n1,f1,n1,n6)
+      256       capacity(n1,n1)
+        2       noRepeatedLink(n1,n1,f1,n1,n6)
+
+x(n1,n1,f1,n1,n7)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+     -999       objectiveFunction
+        1       sourceNode(n1,f1,n1,n7)
+      256       capacity(n1,n1)
+        2       noRepeatedLink(n1,n1,f1,n1,n7)
+
+x(n1,n1,f1,n2,n6)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+     -999       objectiveFunction
+      256       capacity(n1,n1)
+        2       noRepeatedLink(n1,n1,f1,n2,n6)
+
+REMAINING 389 ENTRIES SKIPPED
+
+---- z  Objective function
+
+z
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       objectiveFunction
+
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 13:46:44 Page 4
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE model1 Using MIP From line 99
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           6     SINGLE EQUATIONS          482
+BLOCKS OF VARIABLES           2     SINGLE VARIABLES          393
+NON ZERO ELEMENTS         1,913     DISCRETE VARIABLES        392
+
+
+GENERATION TIME      =        0.012 SECONDS      4 MB  37.1.0 r07954d5 DEX-DEG
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 13:46:44 Page 5
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE model1 Using MIP From line 99
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   model1              OBJECTIVE  z
+     TYPE    MIP                 DIRECTION  MINIMIZE
+     SOLVER  SCIP                FROM LINE  99
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      1 Optimal
+**** OBJECTIVE VALUE               20.0000
+
+ RESOURCE USAGE, LIMIT          0.032 10000000000.000
+ ITERATION COUNT, LIMIT        28    2147483647
+
+SCIP             37.1.0 r07954d5 Released Nov 11, 2021 DEG x86 64bit/Mac OS X 
+
+                           LOWER          LEVEL          UPPER
+
+---- EQU objective~          .              .              .          
+
+  objectiveFunction  objective function
+
+---- EQU sourceNode  Cada flujo tiene un solo origen
+
+                   LOWER          LEVEL          UPPER
+
+n1.f1.n1.n6         1.0000         1.0000         1.0000      
+n1.f1.n1.n7         1.0000         1.0000         1.0000      
+n1.f2.n1.n6         1.0000         1.0000         1.0000      
+n1.f2.n1.n7         1.0000         1.0000         1.0000      
+n2.f1.n2.n6         1.0000         1.0000         1.0000      
+n2.f1.n2.n7         1.0000         1.0000         1.0000      
+n2.f2.n2.n6         1.0000         1.0000         1.0000      
+n2.f2.n2.n7         1.0000         1.0000         1.0000      
+
+---- EQU destinationNodes  Cada flujo tiene un solo destino
+
+                   LOWER          LEVEL          UPPER
+
+n6.f1.n1.n6         1.0000         1.0000         1.0000      
+n6.f1.n2.n6         1.0000         1.0000         1.0000      
+n6.f2.n1.n6         1.0000         1.0000         1.0000      
+n6.f2.n2.n6         1.0000         1.0000         1.0000      
+n7.f1.n1.n7         1.0000         1.0000         1.0000      
+n7.f1.n2.n7         1.0000         1.0000         1.0000      
+n7.f2.n1.n7         1.0000         1.0000         1.0000      
+n7.f2.n2.n7         1.0000         1.0000         1.0000      
+
+---- EQU intermediateNode  intermediate node
+
+                   LOWER          LEVEL          UPPER
+
+n3.f1.n1.n6          .              .              .          
+n3.f1.n1.n7          .              .              .          
+n3.f1.n2.n6          .              .              .          
+n3.f1.n2.n7          .              .              .          
+n3.f2.n1.n6          .              .              .          
+n3.f2.n1.n7          .              .              .          
+n3.f2.n2.n6          .              .              .          
+n3.f2.n2.n7          .              .              .          
+n4.f1.n1.n6          .              .              .          
+n4.f1.n1.n7          .              .              .          
+n4.f1.n2.n6          .              .              .          
+n4.f1.n2.n7          .              .              .          
+n4.f2.n1.n6          .              .              .          
+n4.f2.n1.n7          .              .              .          
+n4.f2.n2.n6          .              .              .          
+n4.f2.n2.n7          .              .              .          
+n5.f1.n1.n6          .              .              .          
+n5.f1.n1.n7          .              .              .          
+n5.f1.n2.n6          .              .              .          
+n5.f1.n2.n7          .              .              .          
+n5.f2.n1.n6          .              .              .          
+n5.f2.n1.n7          .              .              .          
+n5.f2.n2.n6          .              .              .          
+n5.f2.n2.n7          .              .              .          
+
+---- EQU capacity  capacity constraint
+
+             LOWER          LEVEL          UPPER
+
+n1.n1        -INF             .              .          
+n1.n2        -INF             .              .          
+n1.n3        -INF          512.0000       512.0000      
+n1.n4        -INF          512.0000       512.0000      
+n1.n5        -INF             .              .          
+n1.n6        -INF             .              .          
+n1.n7        -INF             .              .          
+n2.n1        -INF             .              .          
+n2.n2        -INF             .              .          
+n2.n3        -INF          512.0000       512.0000      
+n2.n4        -INF          512.0000       512.0000      
+n2.n5        -INF             .              .          
+n2.n6        -INF             .              .          
+n2.n7        -INF             .              .          
+n3.n1        -INF             .           512.0000      
+n3.n2        -INF             .           512.0000      
+n3.n3        -INF             .              .          
+n3.n4        -INF             .           512.0000      
+n3.n5        -INF          512.0000       512.0000      
+n3.n6        -INF          512.0000       512.0000      
+n3.n7        -INF             .              .          
+n4.n1        -INF             .           512.0000      
+n4.n2        -INF             .           512.0000      
+n4.n3        -INF             .           512.0000      
+n4.n4        -INF             .              .          
+n4.n5        -INF          512.0000       512.0000      
+n4.n6        -INF             .              .          
+n4.n7        -INF          512.0000       512.0000      
+n5.n1        -INF             .              .          
+n5.n2        -INF             .              .          
+n5.n3        -INF             .           512.0000      
+n5.n4        -INF             .           512.0000      
+n5.n5        -INF             .              .          
+n5.n6        -INF          512.0000       512.0000      
+n5.n7        -INF          512.0000       512.0000      
+n6.n1        -INF             .              .          
+n6.n2        -INF             .              .          
+n6.n3        -INF             .           512.0000      
+n6.n4        -INF             .              .          
+n6.n5        -INF             .           512.0000      
+n6.n6        -INF             .              .          
+n6.n7        -INF             .              .          
+n7.n1        -INF             .              .          
+n7.n2        -INF             .              .          
+n7.n3        -INF             .              .          
+n7.n4        -INF             .           512.0000      
+n7.n5        -INF             .           512.0000      
+n7.n6        -INF             .              .          
+n7.n7        -INF             .              .          
+
+---- EQU noRepeatedLink  do not repeat link
+
+                      LOWER          LEVEL          UPPER
+
+n1.n1.f1.n1.n6        -INF             .             1.0000      
+n1.n1.f1.n1.n7        -INF             .             1.0000      
+n1.n1.f1.n2.n6        -INF             .             1.0000      
+n1.n1.f1.n2.n7        -INF             .             1.0000      
+n1.n1.f2.n1.n6        -INF             .             1.0000      
+n1.n1.f2.n1.n7        -INF             .             1.0000      
+n1.n1.f2.n2.n6        -INF             .             1.0000      
+n1.n1.f2.n2.n7        -INF             .             1.0000      
+n1.n2.f1.n1.n6        -INF             .             1.0000      
+n1.n2.f1.n1.n7        -INF             .             1.0000      
+n1.n2.f1.n2.n6        -INF             .             1.0000      
+n1.n2.f1.n2.n7        -INF             .             1.0000      
+n1.n2.f2.n1.n6        -INF             .             1.0000      
+n1.n2.f2.n1.n7        -INF             .             1.0000      
+n1.n2.f2.n2.n6        -INF             .             1.0000      
+n1.n2.f2.n2.n7        -INF             .             1.0000      
+n1.n3.f1.n1.n6        -INF            1.0000         1.0000      
+n1.n3.f1.n1.n7        -INF             .             1.0000      
+n1.n3.f1.n2.n6        -INF             .             1.0000      
+n1.n3.f1.n2.n7        -INF             .             1.0000      
+n1.n3.f2.n1.n6        -INF            1.0000         1.0000      
+n1.n3.f2.n1.n7        -INF             .             1.0000      
+n1.n3.f2.n2.n6        -INF             .             1.0000      
+n1.n3.f2.n2.n7        -INF             .             1.0000      
+n1.n4.f1.n1.n6        -INF             .             1.0000      
+n1.n4.f1.n1.n7        -INF            1.0000         1.0000      
+n1.n4.f1.n2.n6        -INF             .             1.0000      
+n1.n4.f1.n2.n7        -INF             .             1.0000      
+n1.n4.f2.n1.n6        -INF             .             1.0000      
+n1.n4.f2.n1.n7        -INF            1.0000         1.0000      
+n1.n4.f2.n2.n6        -INF             .             1.0000      
+n1.n4.f2.n2.n7        -INF             .             1.0000      
+n1.n5.f1.n1.n6        -INF             .             1.0000      
+n1.n5.f1.n1.n7        -INF             .             1.0000      
+n1.n5.f1.n2.n6        -INF             .             1.0000      
+n1.n5.f1.n2.n7        -INF             .             1.0000      
+n1.n5.f2.n1.n6        -INF             .             1.0000      
+n1.n5.f2.n1.n7        -INF             .             1.0000      
+n1.n5.f2.n2.n6        -INF             .             1.0000      
+n1.n5.f2.n2.n7        -INF             .             1.0000      
+n1.n6.f1.n1.n6        -INF             .             1.0000      
+n1.n6.f1.n1.n7        -INF             .             1.0000      
+n1.n6.f1.n2.n6        -INF             .             1.0000      
+n1.n6.f1.n2.n7        -INF             .             1.0000      
+n1.n6.f2.n1.n6        -INF             .             1.0000      
+n1.n6.f2.n1.n7        -INF             .             1.0000      
+n1.n6.f2.n2.n6        -INF             .             1.0000      
+n1.n6.f2.n2.n7        -INF             .             1.0000      
+n1.n7.f1.n1.n6        -INF             .             1.0000      
+n1.n7.f1.n1.n7        -INF             .             1.0000      
+n1.n7.f1.n2.n6        -INF             .             1.0000      
+n1.n7.f1.n2.n7        -INF             .             1.0000      
+n1.n7.f2.n1.n6        -INF             .             1.0000      
+n1.n7.f2.n1.n7        -INF             .             1.0000      
+n1.n7.f2.n2.n6        -INF             .             1.0000      
+n1.n7.f2.n2.n7        -INF             .             1.0000      
+n2.n1.f1.n1.n6        -INF             .             1.0000      
+n2.n1.f1.n1.n7        -INF             .             1.0000      
+n2.n1.f1.n2.n6        -INF             .             1.0000      
+n2.n1.f1.n2.n7        -INF             .             1.0000      
+n2.n1.f2.n1.n6        -INF             .             1.0000      
+n2.n1.f2.n1.n7        -INF             .             1.0000      
+n2.n1.f2.n2.n6        -INF             .             1.0000      
+n2.n1.f2.n2.n7        -INF             .             1.0000      
+n2.n2.f1.n1.n6        -INF             .             1.0000      
+n2.n2.f1.n1.n7        -INF             .             1.0000      
+n2.n2.f1.n2.n6        -INF             .             1.0000      
+n2.n2.f1.n2.n7        -INF             .             1.0000      
+n2.n2.f2.n1.n6        -INF             .             1.0000      
+n2.n2.f2.n1.n7        -INF             .             1.0000      
+n2.n2.f2.n2.n6        -INF             .             1.0000      
+n2.n2.f2.n2.n7        -INF             .             1.0000      
+n2.n3.f1.n1.n6        -INF             .             1.0000      
+n2.n3.f1.n1.n7        -INF             .             1.0000      
+n2.n3.f1.n2.n6        -INF             .             1.0000      
+n2.n3.f1.n2.n7        -INF             .             1.0000      
+n2.n3.f2.n1.n6        -INF             .             1.0000      
+n2.n3.f2.n1.n7        -INF             .             1.0000      
+n2.n3.f2.n2.n6        -INF            1.0000         1.0000      
+n2.n3.f2.n2.n7        -INF            1.0000         1.0000      
+n2.n4.f1.n1.n6        -INF             .             1.0000      
+n2.n4.f1.n1.n7        -INF             .             1.0000      
+n2.n4.f1.n2.n6        -INF            1.0000         1.0000      
+n2.n4.f1.n2.n7        -INF            1.0000         1.0000      
+n2.n4.f2.n1.n6        -INF             .             1.0000      
+n2.n4.f2.n1.n7        -INF             .             1.0000      
+n2.n4.f2.n2.n6        -INF             .             1.0000      
+n2.n4.f2.n2.n7        -INF             .             1.0000      
+n2.n5.f1.n1.n6        -INF             .             1.0000      
+n2.n5.f1.n1.n7        -INF             .             1.0000      
+n2.n5.f1.n2.n6        -INF             .             1.0000      
+n2.n5.f1.n2.n7        -INF             .             1.0000      
+n2.n5.f2.n1.n6        -INF             .             1.0000      
+n2.n5.f2.n1.n7        -INF             .             1.0000      
+n2.n5.f2.n2.n6        -INF             .             1.0000      
+n2.n5.f2.n2.n7        -INF             .             1.0000      
+n2.n6.f1.n1.n6        -INF             .             1.0000      
+n2.n6.f1.n1.n7        -INF             .             1.0000      
+n2.n6.f1.n2.n6        -INF             .             1.0000      
+n2.n6.f1.n2.n7        -INF             .             1.0000      
+n2.n6.f2.n1.n6        -INF             .             1.0000      
+n2.n6.f2.n1.n7        -INF             .             1.0000      
+n2.n6.f2.n2.n6        -INF             .             1.0000      
+n2.n6.f2.n2.n7        -INF             .             1.0000      
+n2.n7.f1.n1.n6        -INF             .             1.0000      
+n2.n7.f1.n1.n7        -INF             .             1.0000      
+n2.n7.f1.n2.n6        -INF             .             1.0000      
+n2.n7.f1.n2.n7        -INF             .             1.0000      
+n2.n7.f2.n1.n6        -INF             .             1.0000      
+n2.n7.f2.n1.n7        -INF             .             1.0000      
+n2.n7.f2.n2.n6        -INF             .             1.0000      
+n2.n7.f2.n2.n7        -INF             .             1.0000      
+n3.n1.f1.n1.n6        -INF            1.0000         1.0000      
+n3.n1.f1.n1.n7        -INF             .             1.0000      
+n3.n1.f1.n2.n6        -INF             .             1.0000      
+n3.n1.f1.n2.n7        -INF             .             1.0000      
+n3.n1.f2.n1.n6        -INF            1.0000         1.0000      
+n3.n1.f2.n1.n7        -INF             .             1.0000      
+n3.n1.f2.n2.n6        -INF             .             1.0000      
+n3.n1.f2.n2.n7        -INF             .             1.0000      
+n3.n2.f1.n1.n6        -INF             .             1.0000      
+n3.n2.f1.n1.n7        -INF             .             1.0000      
+n3.n2.f1.n2.n6        -INF             .             1.0000      
+n3.n2.f1.n2.n7        -INF             .             1.0000      
+n3.n2.f2.n1.n6        -INF             .             1.0000      
+n3.n2.f2.n1.n7        -INF             .             1.0000      
+n3.n2.f2.n2.n6        -INF            1.0000         1.0000      
+n3.n2.f2.n2.n7        -INF            1.0000         1.0000      
+n3.n3.f1.n1.n6        -INF             .             1.0000      
+n3.n3.f1.n1.n7        -INF             .             1.0000      
+n3.n3.f1.n2.n6        -INF             .             1.0000      
+n3.n3.f1.n2.n7        -INF             .             1.0000      
+n3.n3.f2.n1.n6        -INF             .             1.0000      
+n3.n3.f2.n1.n7        -INF             .             1.0000      
+n3.n3.f2.n2.n6        -INF             .             1.0000      
+n3.n3.f2.n2.n7        -INF             .             1.0000      
+n3.n4.f1.n1.n6        -INF             .             1.0000      
+n3.n4.f1.n1.n7        -INF             .             1.0000      
+n3.n4.f1.n2.n6        -INF             .             1.0000      
+n3.n4.f1.n2.n7        -INF             .             1.0000      
+n3.n4.f2.n1.n6        -INF             .             1.0000      
+n3.n4.f2.n1.n7        -INF             .             1.0000      
+n3.n4.f2.n2.n6        -INF             .             1.0000      
+n3.n4.f2.n2.n7        -INF             .             1.0000      
+n3.n5.f1.n1.n6        -INF            1.0000         1.0000      
+n3.n5.f1.n1.n7        -INF             .             1.0000      
+n3.n5.f1.n2.n6        -INF             .             1.0000      
+n3.n5.f1.n2.n7        -INF             .             1.0000      
+n3.n5.f2.n1.n6        -INF             .             1.0000      
+n3.n5.f2.n1.n7        -INF             .             1.0000      
+n3.n5.f2.n2.n6        -INF             .             1.0000      
+n3.n5.f2.n2.n7        -INF            1.0000         1.0000      
+n3.n6.f1.n1.n6        -INF             .             1.0000      
+n3.n6.f1.n1.n7        -INF             .             1.0000      
+n3.n6.f1.n2.n6        -INF             .             1.0000      
+n3.n6.f1.n2.n7        -INF             .             1.0000      
+n3.n6.f2.n1.n6        -INF            1.0000         1.0000      
+n3.n6.f2.n1.n7        -INF             .             1.0000      
+n3.n6.f2.n2.n6        -INF            1.0000         1.0000      
+n3.n6.f2.n2.n7        -INF             .             1.0000      
+n3.n7.f1.n1.n6        -INF             .             1.0000      
+n3.n7.f1.n1.n7        -INF             .             1.0000      
+n3.n7.f1.n2.n6        -INF             .             1.0000      
+n3.n7.f1.n2.n7        -INF             .             1.0000      
+n3.n7.f2.n1.n6        -INF             .             1.0000      
+n3.n7.f2.n1.n7        -INF             .             1.0000      
+n3.n7.f2.n2.n6        -INF             .             1.0000      
+n3.n7.f2.n2.n7        -INF             .             1.0000      
+n4.n1.f1.n1.n6        -INF             .             1.0000      
+n4.n1.f1.n1.n7        -INF            1.0000         1.0000      
+n4.n1.f1.n2.n6        -INF             .             1.0000      
+n4.n1.f1.n2.n7        -INF             .             1.0000      
+n4.n1.f2.n1.n6        -INF             .             1.0000      
+n4.n1.f2.n1.n7        -INF            1.0000         1.0000      
+n4.n1.f2.n2.n6        -INF             .             1.0000      
+n4.n1.f2.n2.n7        -INF             .             1.0000      
+n4.n2.f1.n1.n6        -INF             .             1.0000      
+n4.n2.f1.n1.n7        -INF             .             1.0000      
+n4.n2.f1.n2.n6        -INF            1.0000         1.0000      
+n4.n2.f1.n2.n7        -INF            1.0000         1.0000      
+n4.n2.f2.n1.n6        -INF             .             1.0000      
+n4.n2.f2.n1.n7        -INF             .             1.0000      
+n4.n2.f2.n2.n6        -INF             .             1.0000      
+n4.n2.f2.n2.n7        -INF             .             1.0000      
+n4.n3.f1.n1.n6        -INF             .             1.0000      
+n4.n3.f1.n1.n7        -INF             .             1.0000      
+n4.n3.f1.n2.n6        -INF             .             1.0000      
+n4.n3.f1.n2.n7        -INF             .             1.0000      
+n4.n3.f2.n1.n6        -INF             .             1.0000      
+n4.n3.f2.n1.n7        -INF             .             1.0000      
+n4.n3.f2.n2.n6        -INF             .             1.0000      
+n4.n3.f2.n2.n7        -INF             .             1.0000      
+n4.n4.f1.n1.n6        -INF             .             1.0000      
+n4.n4.f1.n1.n7        -INF             .             1.0000      
+n4.n4.f1.n2.n6        -INF             .             1.0000      
+n4.n4.f1.n2.n7        -INF             .             1.0000      
+n4.n4.f2.n1.n6        -INF             .             1.0000      
+n4.n4.f2.n1.n7        -INF             .             1.0000      
+n4.n4.f2.n2.n6        -INF             .             1.0000      
+n4.n4.f2.n2.n7        -INF             .             1.0000      
+n4.n5.f1.n1.n6        -INF             .             1.0000      
+n4.n5.f1.n1.n7        -INF             .             1.0000      
+n4.n5.f1.n2.n6        -INF            1.0000         1.0000      
+n4.n5.f1.n2.n7        -INF            1.0000         1.0000      
+n4.n5.f2.n1.n6        -INF             .             1.0000      
+n4.n5.f2.n1.n7        -INF             .             1.0000      
+n4.n5.f2.n2.n6        -INF             .             1.0000      
+n4.n5.f2.n2.n7        -INF             .             1.0000      
+n4.n6.f1.n1.n6        -INF             .             1.0000      
+n4.n6.f1.n1.n7        -INF             .             1.0000      
+n4.n6.f1.n2.n6        -INF             .             1.0000      
+n4.n6.f1.n2.n7        -INF             .             1.0000      
+n4.n6.f2.n1.n6        -INF             .             1.0000      
+n4.n6.f2.n1.n7        -INF             .             1.0000      
+n4.n6.f2.n2.n6        -INF             .             1.0000      
+n4.n6.f2.n2.n7        -INF             .             1.0000      
+n4.n7.f1.n1.n6        -INF             .             1.0000      
+n4.n7.f1.n1.n7        -INF            1.0000         1.0000      
+n4.n7.f1.n2.n6        -INF             .             1.0000      
+n4.n7.f1.n2.n7        -INF             .             1.0000      
+n4.n7.f2.n1.n6        -INF             .             1.0000      
+n4.n7.f2.n1.n7        -INF            1.0000         1.0000      
+n4.n7.f2.n2.n6        -INF             .             1.0000      
+n4.n7.f2.n2.n7        -INF             .             1.0000      
+n5.n1.f1.n1.n6        -INF             .             1.0000      
+n5.n1.f1.n1.n7        -INF             .             1.0000      
+n5.n1.f1.n2.n6        -INF             .             1.0000      
+n5.n1.f1.n2.n7        -INF             .             1.0000      
+n5.n1.f2.n1.n6        -INF             .             1.0000      
+n5.n1.f2.n1.n7        -INF             .             1.0000      
+n5.n1.f2.n2.n6        -INF             .             1.0000      
+n5.n1.f2.n2.n7        -INF             .             1.0000      
+n5.n2.f1.n1.n6        -INF             .             1.0000      
+n5.n2.f1.n1.n7        -INF             .             1.0000      
+n5.n2.f1.n2.n6        -INF             .             1.0000      
+n5.n2.f1.n2.n7        -INF             .             1.0000      
+n5.n2.f2.n1.n6        -INF             .             1.0000      
+n5.n2.f2.n1.n7        -INF             .             1.0000      
+n5.n2.f2.n2.n6        -INF             .             1.0000      
+n5.n2.f2.n2.n7        -INF             .             1.0000      
+n5.n3.f1.n1.n6        -INF            1.0000         1.0000      
+n5.n3.f1.n1.n7        -INF             .             1.0000      
+n5.n3.f1.n2.n6        -INF             .             1.0000      
+n5.n3.f1.n2.n7        -INF             .             1.0000      
+n5.n3.f2.n1.n6        -INF             .             1.0000      
+n5.n3.f2.n1.n7        -INF             .             1.0000      
+n5.n3.f2.n2.n6        -INF             .             1.0000      
+n5.n3.f2.n2.n7        -INF            1.0000         1.0000      
+n5.n4.f1.n1.n6        -INF             .             1.0000      
+n5.n4.f1.n1.n7        -INF             .             1.0000      
+n5.n4.f1.n2.n6        -INF            1.0000         1.0000      
+n5.n4.f1.n2.n7        -INF            1.0000         1.0000      
+n5.n4.f2.n1.n6        -INF             .             1.0000      
+n5.n4.f2.n1.n7        -INF             .             1.0000      
+n5.n4.f2.n2.n6        -INF             .             1.0000      
+n5.n4.f2.n2.n7        -INF             .             1.0000      
+n5.n5.f1.n1.n6        -INF             .             1.0000      
+n5.n5.f1.n1.n7        -INF             .             1.0000      
+n5.n5.f1.n2.n6        -INF             .             1.0000      
+n5.n5.f1.n2.n7        -INF             .             1.0000      
+n5.n5.f2.n1.n6        -INF             .             1.0000      
+n5.n5.f2.n1.n7        -INF             .             1.0000      
+n5.n5.f2.n2.n6        -INF             .             1.0000      
+n5.n5.f2.n2.n7        -INF             .             1.0000      
+n5.n6.f1.n1.n6        -INF            1.0000         1.0000      
+n5.n6.f1.n1.n7        -INF             .             1.0000      
+n5.n6.f1.n2.n6        -INF            1.0000         1.0000      
+n5.n6.f1.n2.n7        -INF             .             1.0000      
+n5.n6.f2.n1.n6        -INF             .             1.0000      
+n5.n6.f2.n1.n7        -INF             .             1.0000      
+n5.n6.f2.n2.n6        -INF             .             1.0000      
+n5.n6.f2.n2.n7        -INF             .             1.0000      
+n5.n7.f1.n1.n6        -INF             .             1.0000      
+n5.n7.f1.n1.n7        -INF             .             1.0000      
+n5.n7.f1.n2.n6        -INF             .             1.0000      
+n5.n7.f1.n2.n7        -INF            1.0000         1.0000      
+n5.n7.f2.n1.n6        -INF             .             1.0000      
+n5.n7.f2.n1.n7        -INF             .             1.0000      
+n5.n7.f2.n2.n6        -INF             .             1.0000      
+n5.n7.f2.n2.n7        -INF            1.0000         1.0000      
+n6.n1.f1.n1.n6        -INF             .             1.0000      
+n6.n1.f1.n1.n7        -INF             .             1.0000      
+n6.n1.f1.n2.n6        -INF             .             1.0000      
+n6.n1.f1.n2.n7        -INF             .             1.0000      
+n6.n1.f2.n1.n6        -INF             .             1.0000      
+n6.n1.f2.n1.n7        -INF             .             1.0000      
+n6.n1.f2.n2.n6        -INF             .             1.0000      
+n6.n1.f2.n2.n7        -INF             .             1.0000      
+n6.n2.f1.n1.n6        -INF             .             1.0000      
+n6.n2.f1.n1.n7        -INF             .             1.0000      
+n6.n2.f1.n2.n6        -INF             .             1.0000      
+n6.n2.f1.n2.n7        -INF             .             1.0000      
+n6.n2.f2.n1.n6        -INF             .             1.0000      
+n6.n2.f2.n1.n7        -INF             .             1.0000      
+n6.n2.f2.n2.n6        -INF             .             1.0000      
+n6.n2.f2.n2.n7        -INF             .             1.0000      
+n6.n3.f1.n1.n6        -INF             .             1.0000      
+n6.n3.f1.n1.n7        -INF             .             1.0000      
+n6.n3.f1.n2.n6        -INF             .             1.0000      
+n6.n3.f1.n2.n7        -INF             .             1.0000      
+n6.n3.f2.n1.n6        -INF            1.0000         1.0000      
+n6.n3.f2.n1.n7        -INF             .             1.0000      
+n6.n3.f2.n2.n6        -INF            1.0000         1.0000      
+n6.n3.f2.n2.n7        -INF             .             1.0000      
+n6.n4.f1.n1.n6        -INF             .             1.0000      
+n6.n4.f1.n1.n7        -INF             .             1.0000      
+n6.n4.f1.n2.n6        -INF             .             1.0000      
+n6.n4.f1.n2.n7        -INF             .             1.0000      
+n6.n4.f2.n1.n6        -INF             .             1.0000      
+n6.n4.f2.n1.n7        -INF             .             1.0000      
+n6.n4.f2.n2.n6        -INF             .             1.0000      
+n6.n4.f2.n2.n7        -INF             .             1.0000      
+n6.n5.f1.n1.n6        -INF            1.0000         1.0000      
+n6.n5.f1.n1.n7        -INF             .             1.0000      
+n6.n5.f1.n2.n6        -INF            1.0000         1.0000      
+n6.n5.f1.n2.n7        -INF             .             1.0000      
+n6.n5.f2.n1.n6        -INF             .             1.0000      
+n6.n5.f2.n1.n7        -INF             .             1.0000      
+n6.n5.f2.n2.n6        -INF             .             1.0000      
+n6.n5.f2.n2.n7        -INF             .             1.0000      
+n6.n6.f1.n1.n6        -INF             .             1.0000      
+n6.n6.f1.n1.n7        -INF             .             1.0000      
+n6.n6.f1.n2.n6        -INF             .             1.0000      
+n6.n6.f1.n2.n7        -INF             .             1.0000      
+n6.n6.f2.n1.n6        -INF             .             1.0000      
+n6.n6.f2.n1.n7        -INF             .             1.0000      
+n6.n6.f2.n2.n6        -INF             .             1.0000      
+n6.n6.f2.n2.n7        -INF             .             1.0000      
+n6.n7.f1.n1.n6        -INF             .             1.0000      
+n6.n7.f1.n1.n7        -INF             .             1.0000      
+n6.n7.f1.n2.n6        -INF             .             1.0000      
+n6.n7.f1.n2.n7        -INF             .             1.0000      
+n6.n7.f2.n1.n6        -INF             .             1.0000      
+n6.n7.f2.n1.n7        -INF             .             1.0000      
+n6.n7.f2.n2.n6        -INF             .             1.0000      
+n6.n7.f2.n2.n7        -INF             .             1.0000      
+n7.n1.f1.n1.n6        -INF             .             1.0000      
+n7.n1.f1.n1.n7        -INF             .             1.0000      
+n7.n1.f1.n2.n6        -INF             .             1.0000      
+n7.n1.f1.n2.n7        -INF             .             1.0000      
+n7.n1.f2.n1.n6        -INF             .             1.0000      
+n7.n1.f2.n1.n7        -INF             .             1.0000      
+n7.n1.f2.n2.n6        -INF             .             1.0000      
+n7.n1.f2.n2.n7        -INF             .             1.0000      
+n7.n2.f1.n1.n6        -INF             .             1.0000      
+n7.n2.f1.n1.n7        -INF             .             1.0000      
+n7.n2.f1.n2.n6        -INF             .             1.0000      
+n7.n2.f1.n2.n7        -INF             .             1.0000      
+n7.n2.f2.n1.n6        -INF             .             1.0000      
+n7.n2.f2.n1.n7        -INF             .             1.0000      
+n7.n2.f2.n2.n6        -INF             .             1.0000      
+n7.n2.f2.n2.n7        -INF             .             1.0000      
+n7.n3.f1.n1.n6        -INF             .             1.0000      
+n7.n3.f1.n1.n7        -INF             .             1.0000      
+n7.n3.f1.n2.n6        -INF             .             1.0000      
+n7.n3.f1.n2.n7        -INF             .             1.0000      
+n7.n3.f2.n1.n6        -INF             .             1.0000      
+n7.n3.f2.n1.n7        -INF             .             1.0000      
+n7.n3.f2.n2.n6        -INF             .             1.0000      
+n7.n3.f2.n2.n7        -INF             .             1.0000      
+n7.n4.f1.n1.n6        -INF             .             1.0000      
+n7.n4.f1.n1.n7        -INF            1.0000         1.0000      
+n7.n4.f1.n2.n6        -INF             .             1.0000      
+n7.n4.f1.n2.n7        -INF             .             1.0000      
+n7.n4.f2.n1.n6        -INF             .             1.0000      
+n7.n4.f2.n1.n7        -INF            1.0000         1.0000      
+n7.n4.f2.n2.n6        -INF             .             1.0000      
+n7.n4.f2.n2.n7        -INF             .             1.0000      
+n7.n5.f1.n1.n6        -INF             .             1.0000      
+n7.n5.f1.n1.n7        -INF             .             1.0000      
+n7.n5.f1.n2.n6        -INF             .             1.0000      
+n7.n5.f1.n2.n7        -INF            1.0000         1.0000      
+n7.n5.f2.n1.n6        -INF             .             1.0000      
+n7.n5.f2.n1.n7        -INF             .             1.0000      
+n7.n5.f2.n2.n6        -INF             .             1.0000      
+n7.n5.f2.n2.n7        -INF            1.0000         1.0000      
+n7.n6.f1.n1.n6        -INF             .             1.0000      
+n7.n6.f1.n1.n7        -INF             .             1.0000      
+n7.n6.f1.n2.n6        -INF             .             1.0000      
+n7.n6.f1.n2.n7        -INF             .             1.0000      
+n7.n6.f2.n1.n6        -INF             .             1.0000      
+n7.n6.f2.n1.n7        -INF             .             1.0000      
+n7.n6.f2.n2.n6        -INF             .             1.0000      
+n7.n6.f2.n2.n7        -INF             .             1.0000      
+n7.n7.f1.n1.n6        -INF             .             1.0000      
+n7.n7.f1.n1.n7        -INF             .             1.0000      
+n7.n7.f1.n2.n6        -INF             .             1.0000      
+n7.n7.f1.n2.n7        -INF             .             1.0000      
+n7.n7.f2.n1.n6        -INF             .             1.0000      
+n7.n7.f2.n1.n7        -INF             .             1.0000      
+n7.n7.f2.n2.n6        -INF             .             1.0000      
+n7.n7.f2.n2.n7        -INF             .             1.0000      
+
+---- VAR x  Indicates if the link i-j is selected or not from o to d.
+
+                      LOWER          LEVEL          UPPER
+
+n1.n1.f1.n1.n6          .              .             1.0000      
+n1.n1.f1.n1.n7          .              .             1.0000      
+n1.n1.f1.n2.n6          .              .             1.0000      
+n1.n1.f1.n2.n7          .              .             1.0000      
+n1.n1.f2.n1.n6          .              .             1.0000      
+n1.n1.f2.n1.n7          .              .             1.0000      
+n1.n1.f2.n2.n6          .              .             1.0000      
+n1.n1.f2.n2.n7          .              .             1.0000      
+n1.n2.f1.n1.n6          .              .             1.0000      
+n1.n2.f1.n1.n7          .              .             1.0000      
+n1.n2.f1.n2.n6          .              .             1.0000      
+n1.n2.f1.n2.n7          .              .             1.0000      
+n1.n2.f2.n1.n6          .              .             1.0000      
+n1.n2.f2.n1.n7          .              .             1.0000      
+n1.n2.f2.n2.n6          .              .             1.0000      
+n1.n2.f2.n2.n7          .              .             1.0000      
+n1.n3.f1.n1.n6          .             1.0000         1.0000      
+n1.n3.f1.n1.n7          .              .             1.0000      
+n1.n3.f1.n2.n6          .              .             1.0000      
+n1.n3.f1.n2.n7          .              .             1.0000      
+n1.n3.f2.n1.n6          .             1.0000         1.0000      
+n1.n3.f2.n1.n7          .              .             1.0000      
+n1.n3.f2.n2.n6          .              .             1.0000      
+n1.n3.f2.n2.n7          .              .             1.0000      
+n1.n4.f1.n1.n6          .              .             1.0000      
+n1.n4.f1.n1.n7          .             1.0000         1.0000      
+n1.n4.f1.n2.n6          .              .             1.0000      
+n1.n4.f1.n2.n7          .              .             1.0000      
+n1.n4.f2.n1.n6          .              .             1.0000      
+n1.n4.f2.n1.n7          .             1.0000         1.0000      
+n1.n4.f2.n2.n6          .              .             1.0000      
+n1.n4.f2.n2.n7          .              .             1.0000      
+n1.n5.f1.n1.n6          .              .             1.0000      
+n1.n5.f1.n1.n7          .              .             1.0000      
+n1.n5.f1.n2.n6          .              .             1.0000      
+n1.n5.f1.n2.n7          .              .             1.0000      
+n1.n5.f2.n1.n6          .              .             1.0000      
+n1.n5.f2.n1.n7          .              .             1.0000      
+n1.n5.f2.n2.n6          .              .             1.0000      
+n1.n5.f2.n2.n7          .              .             1.0000      
+n1.n6.f1.n1.n6          .              .             1.0000      
+n1.n6.f1.n1.n7          .              .             1.0000      
+n1.n6.f1.n2.n6          .              .             1.0000      
+n1.n6.f1.n2.n7          .              .             1.0000      
+n1.n6.f2.n1.n6          .              .             1.0000      
+n1.n6.f2.n1.n7          .              .             1.0000      
+n1.n6.f2.n2.n6          .              .             1.0000      
+n1.n6.f2.n2.n7          .              .             1.0000      
+n1.n7.f1.n1.n6          .              .             1.0000      
+n1.n7.f1.n1.n7          .              .             1.0000      
+n1.n7.f1.n2.n6          .              .             1.0000      
+n1.n7.f1.n2.n7          .              .             1.0000      
+n1.n7.f2.n1.n6          .              .             1.0000      
+n1.n7.f2.n1.n7          .              .             1.0000      
+n1.n7.f2.n2.n6          .              .             1.0000      
+n1.n7.f2.n2.n7          .              .             1.0000      
+n2.n1.f1.n1.n6          .              .             1.0000      
+n2.n1.f1.n1.n7          .              .             1.0000      
+n2.n1.f1.n2.n6          .              .             1.0000      
+n2.n1.f1.n2.n7          .              .             1.0000      
+n2.n1.f2.n1.n6          .              .             1.0000      
+n2.n1.f2.n1.n7          .              .             1.0000      
+n2.n1.f2.n2.n6          .              .             1.0000      
+n2.n1.f2.n2.n7          .              .             1.0000      
+n2.n2.f1.n1.n6          .              .             1.0000      
+n2.n2.f1.n1.n7          .              .             1.0000      
+n2.n2.f1.n2.n6          .              .             1.0000      
+n2.n2.f1.n2.n7          .              .             1.0000      
+n2.n2.f2.n1.n6          .              .             1.0000      
+n2.n2.f2.n1.n7          .              .             1.0000      
+n2.n2.f2.n2.n6          .              .             1.0000      
+n2.n2.f2.n2.n7          .              .             1.0000      
+n2.n3.f1.n1.n6          .              .             1.0000      
+n2.n3.f1.n1.n7          .              .             1.0000      
+n2.n3.f1.n2.n6          .              .             1.0000      
+n2.n3.f1.n2.n7          .              .             1.0000      
+n2.n3.f2.n1.n6          .              .             1.0000      
+n2.n3.f2.n1.n7          .              .             1.0000      
+n2.n3.f2.n2.n6          .             1.0000         1.0000      
+n2.n3.f2.n2.n7          .             1.0000         1.0000      
+n2.n4.f1.n1.n6          .              .             1.0000      
+n2.n4.f1.n1.n7          .              .             1.0000      
+n2.n4.f1.n2.n6          .             1.0000         1.0000      
+n2.n4.f1.n2.n7          .             1.0000         1.0000      
+n2.n4.f2.n1.n6          .              .             1.0000      
+n2.n4.f2.n1.n7          .              .             1.0000      
+n2.n4.f2.n2.n6          .              .             1.0000      
+n2.n4.f2.n2.n7          .              .             1.0000      
+n2.n5.f1.n1.n6          .              .             1.0000      
+n2.n5.f1.n1.n7          .              .             1.0000      
+n2.n5.f1.n2.n6          .              .             1.0000      
+n2.n5.f1.n2.n7          .              .             1.0000      
+n2.n5.f2.n1.n6          .              .             1.0000      
+n2.n5.f2.n1.n7          .              .             1.0000      
+n2.n5.f2.n2.n6          .              .             1.0000      
+n2.n5.f2.n2.n7          .              .             1.0000      
+n2.n6.f1.n1.n6          .              .             1.0000      
+n2.n6.f1.n1.n7          .              .             1.0000      
+n2.n6.f1.n2.n6          .              .             1.0000      
+n2.n6.f1.n2.n7          .              .             1.0000      
+n2.n6.f2.n1.n6          .              .             1.0000      
+n2.n6.f2.n1.n7          .              .             1.0000      
+n2.n6.f2.n2.n6          .              .             1.0000      
+n2.n6.f2.n2.n7          .              .             1.0000      
+n2.n7.f1.n1.n6          .              .             1.0000      
+n2.n7.f1.n1.n7          .              .             1.0000      
+n2.n7.f1.n2.n6          .              .             1.0000      
+n2.n7.f1.n2.n7          .              .             1.0000      
+n2.n7.f2.n1.n6          .              .             1.0000      
+n2.n7.f2.n1.n7          .              .             1.0000      
+n2.n7.f2.n2.n6          .              .             1.0000      
+n2.n7.f2.n2.n7          .              .             1.0000      
+n3.n1.f1.n1.n6          .              .             1.0000      
+n3.n1.f1.n1.n7          .              .             1.0000      
+n3.n1.f1.n2.n6          .              .             1.0000      
+n3.n1.f1.n2.n7          .              .             1.0000      
+n3.n1.f2.n1.n6          .              .             1.0000      
+n3.n1.f2.n1.n7          .              .             1.0000      
+n3.n1.f2.n2.n6          .              .             1.0000      
+n3.n1.f2.n2.n7          .              .             1.0000      
+n3.n2.f1.n1.n6          .              .             1.0000      
+n3.n2.f1.n1.n7          .              .             1.0000      
+n3.n2.f1.n2.n6          .              .             1.0000      
+n3.n2.f1.n2.n7          .              .             1.0000      
+n3.n2.f2.n1.n6          .              .             1.0000      
+n3.n2.f2.n1.n7          .              .             1.0000      
+n3.n2.f2.n2.n6          .              .             1.0000      
+n3.n2.f2.n2.n7          .              .             1.0000      
+n3.n3.f1.n1.n6          .              .             1.0000      
+n3.n3.f1.n1.n7          .              .             1.0000      
+n3.n3.f1.n2.n6          .              .             1.0000      
+n3.n3.f1.n2.n7          .              .             1.0000      
+n3.n3.f2.n1.n6          .              .             1.0000      
+n3.n3.f2.n1.n7          .              .             1.0000      
+n3.n3.f2.n2.n6          .              .             1.0000      
+n3.n3.f2.n2.n7          .              .             1.0000      
+n3.n4.f1.n1.n6          .              .             1.0000      
+n3.n4.f1.n1.n7          .              .             1.0000      
+n3.n4.f1.n2.n6          .              .             1.0000      
+n3.n4.f1.n2.n7          .              .             1.0000      
+n3.n4.f2.n1.n6          .              .             1.0000      
+n3.n4.f2.n1.n7          .              .             1.0000      
+n3.n4.f2.n2.n6          .              .             1.0000      
+n3.n4.f2.n2.n7          .              .             1.0000      
+n3.n5.f1.n1.n6          .             1.0000         1.0000      
+n3.n5.f1.n1.n7          .              .             1.0000      
+n3.n5.f1.n2.n6          .              .             1.0000      
+n3.n5.f1.n2.n7          .              .             1.0000      
+n3.n5.f2.n1.n6          .              .             1.0000      
+n3.n5.f2.n1.n7          .              .             1.0000      
+n3.n5.f2.n2.n6          .              .             1.0000      
+n3.n5.f2.n2.n7          .             1.0000         1.0000      
+n3.n6.f1.n1.n6          .              .             1.0000      
+n3.n6.f1.n1.n7          .              .             1.0000      
+n3.n6.f1.n2.n6          .              .             1.0000      
+n3.n6.f1.n2.n7          .              .             1.0000      
+n3.n6.f2.n1.n6          .             1.0000         1.0000      
+n3.n6.f2.n1.n7          .              .             1.0000      
+n3.n6.f2.n2.n6          .             1.0000         1.0000      
+n3.n6.f2.n2.n7          .              .             1.0000      
+n3.n7.f1.n1.n6          .              .             1.0000      
+n3.n7.f1.n1.n7          .              .             1.0000      
+n3.n7.f1.n2.n6          .              .             1.0000      
+n3.n7.f1.n2.n7          .              .             1.0000      
+n3.n7.f2.n1.n6          .              .             1.0000      
+n3.n7.f2.n1.n7          .              .             1.0000      
+n3.n7.f2.n2.n6          .              .             1.0000      
+n3.n7.f2.n2.n7          .              .             1.0000      
+n4.n1.f1.n1.n6          .              .             1.0000      
+n4.n1.f1.n1.n7          .              .             1.0000      
+n4.n1.f1.n2.n6          .              .             1.0000      
+n4.n1.f1.n2.n7          .              .             1.0000      
+n4.n1.f2.n1.n6          .              .             1.0000      
+n4.n1.f2.n1.n7          .              .             1.0000      
+n4.n1.f2.n2.n6          .              .             1.0000      
+n4.n1.f2.n2.n7          .              .             1.0000      
+n4.n2.f1.n1.n6          .              .             1.0000      
+n4.n2.f1.n1.n7          .              .             1.0000      
+n4.n2.f1.n2.n6          .              .             1.0000      
+n4.n2.f1.n2.n7          .              .             1.0000      
+n4.n2.f2.n1.n6          .              .             1.0000      
+n4.n2.f2.n1.n7          .              .             1.0000      
+n4.n2.f2.n2.n6          .              .             1.0000      
+n4.n2.f2.n2.n7          .              .             1.0000      
+n4.n3.f1.n1.n6          .              .             1.0000      
+n4.n3.f1.n1.n7          .              .             1.0000      
+n4.n3.f1.n2.n6          .              .             1.0000      
+n4.n3.f1.n2.n7          .              .             1.0000      
+n4.n3.f2.n1.n6          .              .             1.0000      
+n4.n3.f2.n1.n7          .              .             1.0000      
+n4.n3.f2.n2.n6          .              .             1.0000      
+n4.n3.f2.n2.n7          .              .             1.0000      
+n4.n4.f1.n1.n6          .              .             1.0000      
+n4.n4.f1.n1.n7          .              .             1.0000      
+n4.n4.f1.n2.n6          .              .             1.0000      
+n4.n4.f1.n2.n7          .              .             1.0000      
+n4.n4.f2.n1.n6          .              .             1.0000      
+n4.n4.f2.n1.n7          .              .             1.0000      
+n4.n4.f2.n2.n6          .              .             1.0000      
+n4.n4.f2.n2.n7          .              .             1.0000      
+n4.n5.f1.n1.n6          .              .             1.0000      
+n4.n5.f1.n1.n7          .              .             1.0000      
+n4.n5.f1.n2.n6          .             1.0000         1.0000      
+n4.n5.f1.n2.n7          .             1.0000         1.0000      
+n4.n5.f2.n1.n6          .              .             1.0000      
+n4.n5.f2.n1.n7          .              .             1.0000      
+n4.n5.f2.n2.n6          .              .             1.0000      
+n4.n5.f2.n2.n7          .              .             1.0000      
+n4.n6.f1.n1.n6          .              .             1.0000      
+n4.n6.f1.n1.n7          .              .             1.0000      
+n4.n6.f1.n2.n6          .              .             1.0000      
+n4.n6.f1.n2.n7          .              .             1.0000      
+n4.n6.f2.n1.n6          .              .             1.0000      
+n4.n6.f2.n1.n7          .              .             1.0000      
+n4.n6.f2.n2.n6          .              .             1.0000      
+n4.n6.f2.n2.n7          .              .             1.0000      
+n4.n7.f1.n1.n6          .              .             1.0000      
+n4.n7.f1.n1.n7          .             1.0000         1.0000      
+n4.n7.f1.n2.n6          .              .             1.0000      
+n4.n7.f1.n2.n7          .              .             1.0000      
+n4.n7.f2.n1.n6          .              .             1.0000      
+n4.n7.f2.n1.n7          .             1.0000         1.0000      
+n4.n7.f2.n2.n6          .              .             1.0000      
+n4.n7.f2.n2.n7          .              .             1.0000      
+n5.n1.f1.n1.n6          .              .             1.0000      
+n5.n1.f1.n1.n7          .              .             1.0000      
+n5.n1.f1.n2.n6          .              .             1.0000      
+n5.n1.f1.n2.n7          .              .             1.0000      
+n5.n1.f2.n1.n6          .              .             1.0000      
+n5.n1.f2.n1.n7          .              .             1.0000      
+n5.n1.f2.n2.n6          .              .             1.0000      
+n5.n1.f2.n2.n7          .              .             1.0000      
+n5.n2.f1.n1.n6          .              .             1.0000      
+n5.n2.f1.n1.n7          .              .             1.0000      
+n5.n2.f1.n2.n6          .              .             1.0000      
+n5.n2.f1.n2.n7          .              .             1.0000      
+n5.n2.f2.n1.n6          .              .             1.0000      
+n5.n2.f2.n1.n7          .              .             1.0000      
+n5.n2.f2.n2.n6          .              .             1.0000      
+n5.n2.f2.n2.n7          .              .             1.0000      
+n5.n3.f1.n1.n6          .              .             1.0000      
+n5.n3.f1.n1.n7          .              .             1.0000      
+n5.n3.f1.n2.n6          .              .             1.0000      
+n5.n3.f1.n2.n7          .              .             1.0000      
+n5.n3.f2.n1.n6          .              .             1.0000      
+n5.n3.f2.n1.n7          .              .             1.0000      
+n5.n3.f2.n2.n6          .              .             1.0000      
+n5.n3.f2.n2.n7          .              .             1.0000      
+n5.n4.f1.n1.n6          .              .             1.0000      
+n5.n4.f1.n1.n7          .              .             1.0000      
+n5.n4.f1.n2.n6          .              .             1.0000      
+n5.n4.f1.n2.n7          .              .             1.0000      
+n5.n4.f2.n1.n6          .              .             1.0000      
+n5.n4.f2.n1.n7          .              .             1.0000      
+n5.n4.f2.n2.n6          .              .             1.0000      
+n5.n4.f2.n2.n7          .              .             1.0000      
+n5.n5.f1.n1.n6          .              .             1.0000      
+n5.n5.f1.n1.n7          .              .             1.0000      
+n5.n5.f1.n2.n6          .              .             1.0000      
+n5.n5.f1.n2.n7          .              .             1.0000      
+n5.n5.f2.n1.n6          .              .             1.0000      
+n5.n5.f2.n1.n7          .              .             1.0000      
+n5.n5.f2.n2.n6          .              .             1.0000      
+n5.n5.f2.n2.n7          .              .             1.0000      
+n5.n6.f1.n1.n6          .             1.0000         1.0000      
+n5.n6.f1.n1.n7          .              .             1.0000      
+n5.n6.f1.n2.n6          .             1.0000         1.0000      
+n5.n6.f1.n2.n7          .              .             1.0000      
+n5.n6.f2.n1.n6          .              .             1.0000      
+n5.n6.f2.n1.n7          .              .             1.0000      
+n5.n6.f2.n2.n6          .              .             1.0000      
+n5.n6.f2.n2.n7          .              .             1.0000      
+n5.n7.f1.n1.n6          .              .             1.0000      
+n5.n7.f1.n1.n7          .              .             1.0000      
+n5.n7.f1.n2.n6          .              .             1.0000      
+n5.n7.f1.n2.n7          .             1.0000         1.0000      
+n5.n7.f2.n1.n6          .              .             1.0000      
+n5.n7.f2.n1.n7          .              .             1.0000      
+n5.n7.f2.n2.n6          .              .             1.0000      
+n5.n7.f2.n2.n7          .             1.0000         1.0000      
+n6.n1.f1.n1.n6          .              .             1.0000      
+n6.n1.f1.n1.n7          .              .             1.0000      
+n6.n1.f1.n2.n6          .              .             1.0000      
+n6.n1.f1.n2.n7          .              .             1.0000      
+n6.n1.f2.n1.n6          .              .             1.0000      
+n6.n1.f2.n1.n7          .              .             1.0000      
+n6.n1.f2.n2.n6          .              .             1.0000      
+n6.n1.f2.n2.n7          .              .             1.0000      
+n6.n2.f1.n1.n6          .              .             1.0000      
+n6.n2.f1.n1.n7          .              .             1.0000      
+n6.n2.f1.n2.n6          .              .             1.0000      
+n6.n2.f1.n2.n7          .              .             1.0000      
+n6.n2.f2.n1.n6          .              .             1.0000      
+n6.n2.f2.n1.n7          .              .             1.0000      
+n6.n2.f2.n2.n6          .              .             1.0000      
+n6.n2.f2.n2.n7          .              .             1.0000      
+n6.n3.f1.n1.n6          .              .             1.0000      
+n6.n3.f1.n1.n7          .              .             1.0000      
+n6.n3.f1.n2.n6          .              .             1.0000      
+n6.n3.f1.n2.n7          .              .             1.0000      
+n6.n3.f2.n1.n6          .              .             1.0000      
+n6.n3.f2.n1.n7          .              .             1.0000      
+n6.n3.f2.n2.n6          .              .             1.0000      
+n6.n3.f2.n2.n7          .              .             1.0000      
+n6.n4.f1.n1.n6          .              .             1.0000      
+n6.n4.f1.n1.n7          .              .             1.0000      
+n6.n4.f1.n2.n6          .              .             1.0000      
+n6.n4.f1.n2.n7          .              .             1.0000      
+n6.n4.f2.n1.n6          .              .             1.0000      
+n6.n4.f2.n1.n7          .              .             1.0000      
+n6.n4.f2.n2.n6          .              .             1.0000      
+n6.n4.f2.n2.n7          .              .             1.0000      
+n6.n5.f1.n1.n6          .              .             1.0000      
+n6.n5.f1.n1.n7          .              .             1.0000      
+n6.n5.f1.n2.n6          .              .             1.0000      
+n6.n5.f1.n2.n7          .              .             1.0000      
+n6.n5.f2.n1.n6          .              .             1.0000      
+n6.n5.f2.n1.n7          .              .             1.0000      
+n6.n5.f2.n2.n6          .              .             1.0000      
+n6.n5.f2.n2.n7          .              .             1.0000      
+n6.n6.f1.n1.n6          .              .             1.0000      
+n6.n6.f1.n1.n7          .              .             1.0000      
+n6.n6.f1.n2.n6          .              .             1.0000      
+n6.n6.f1.n2.n7          .              .             1.0000      
+n6.n6.f2.n1.n6          .              .             1.0000      
+n6.n6.f2.n1.n7          .              .             1.0000      
+n6.n6.f2.n2.n6          .              .             1.0000      
+n6.n6.f2.n2.n7          .              .             1.0000      
+n6.n7.f1.n1.n6          .              .             1.0000      
+n6.n7.f1.n1.n7          .              .             1.0000      
+n6.n7.f1.n2.n6          .              .             1.0000      
+n6.n7.f1.n2.n7          .              .             1.0000      
+n6.n7.f2.n1.n6          .              .             1.0000      
+n6.n7.f2.n1.n7          .              .             1.0000      
+n6.n7.f2.n2.n6          .              .             1.0000      
+n6.n7.f2.n2.n7          .              .             1.0000      
+n7.n1.f1.n1.n6          .              .             1.0000      
+n7.n1.f1.n1.n7          .              .             1.0000      
+n7.n1.f1.n2.n6          .              .             1.0000      
+n7.n1.f1.n2.n7          .              .             1.0000      
+n7.n1.f2.n1.n6          .              .             1.0000      
+n7.n1.f2.n1.n7          .              .             1.0000      
+n7.n1.f2.n2.n6          .              .             1.0000      
+n7.n1.f2.n2.n7          .              .             1.0000      
+n7.n2.f1.n1.n6          .              .             1.0000      
+n7.n2.f1.n1.n7          .              .             1.0000      
+n7.n2.f1.n2.n6          .              .             1.0000      
+n7.n2.f1.n2.n7          .              .             1.0000      
+n7.n2.f2.n1.n6          .              .             1.0000      
+n7.n2.f2.n1.n7          .              .             1.0000      
+n7.n2.f2.n2.n6          .              .             1.0000      
+n7.n2.f2.n2.n7          .              .             1.0000      
+n7.n3.f1.n1.n6          .              .             1.0000      
+n7.n3.f1.n1.n7          .              .             1.0000      
+n7.n3.f1.n2.n6          .              .             1.0000      
+n7.n3.f1.n2.n7          .              .             1.0000      
+n7.n3.f2.n1.n6          .              .             1.0000      
+n7.n3.f2.n1.n7          .              .             1.0000      
+n7.n3.f2.n2.n6          .              .             1.0000      
+n7.n3.f2.n2.n7          .              .             1.0000      
+n7.n4.f1.n1.n6          .              .             1.0000      
+n7.n4.f1.n1.n7          .              .             1.0000      
+n7.n4.f1.n2.n6          .              .             1.0000      
+n7.n4.f1.n2.n7          .              .             1.0000      
+n7.n4.f2.n1.n6          .              .             1.0000      
+n7.n4.f2.n1.n7          .              .             1.0000      
+n7.n4.f2.n2.n6          .              .             1.0000      
+n7.n4.f2.n2.n7          .              .             1.0000      
+n7.n5.f1.n1.n6          .              .             1.0000      
+n7.n5.f1.n1.n7          .              .             1.0000      
+n7.n5.f1.n2.n6          .              .             1.0000      
+n7.n5.f1.n2.n7          .              .             1.0000      
+n7.n5.f2.n1.n6          .              .             1.0000      
+n7.n5.f2.n1.n7          .              .             1.0000      
+n7.n5.f2.n2.n6          .              .             1.0000      
+n7.n5.f2.n2.n7          .              .             1.0000      
+n7.n6.f1.n1.n6          .              .             1.0000      
+n7.n6.f1.n1.n7          .              .             1.0000      
+n7.n6.f1.n2.n6          .              .             1.0000      
+n7.n6.f1.n2.n7          .              .             1.0000      
+n7.n6.f2.n1.n6          .              .             1.0000      
+n7.n6.f2.n1.n7          .              .             1.0000      
+n7.n6.f2.n2.n6          .              .             1.0000      
+n7.n6.f2.n2.n7          .              .             1.0000      
+n7.n7.f1.n1.n6          .              .             1.0000      
+n7.n7.f1.n1.n7          .              .             1.0000      
+n7.n7.f1.n2.n6          .              .             1.0000      
+n7.n7.f1.n2.n7          .              .             1.0000      
+n7.n7.f2.n1.n6          .              .             1.0000      
+n7.n7.f2.n1.n7          .              .             1.0000      
+n7.n7.f2.n2.n6          .              .             1.0000      
+n7.n7.f2.n2.n7          .              .             1.0000      
+
+                           LOWER          LEVEL          UPPER
+
+---- VAR z                 -INF           20.0000        +INF         
+
+  z  Objective function
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+GAMS 37.1.0  r07954d5 Released Nov 11, 2021 DEX-DEG x86 64bit/Mac OS X - 03/16/22 13:46:44 Page 6
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+E x e c u t i o n
+
+
+----    103 VARIABLE x.L  Indicates if the link i-j is selected or not from o to d.
+
+INDEX 1 = n1  INDEX 2 = n3
+
+               n6
+
+f1.n1       1.000
+f2.n1       1.000
+
+INDEX 1 = n1  INDEX 2 = n4
+
+               n7
+
+f1.n1       1.000
+f2.n1       1.000
+
+INDEX 1 = n2  INDEX 2 = n3
+
+               n6          n7
+
+f2.n2       1.000       1.000
+
+INDEX 1 = n2  INDEX 2 = n4
+
+               n6          n7
+
+f1.n2       1.000       1.000
+
+INDEX 1 = n3  INDEX 2 = n5
+
+               n6          n7
+
+f1.n1       1.000
+f2.n2                   1.000
+
+INDEX 1 = n3  INDEX 2 = n6
+
+               n6
+
+f2.n1       1.000
+f2.n2       1.000
+
+INDEX 1 = n4  INDEX 2 = n5
+
+               n6          n7
+
+f1.n2       1.000       1.000
+
+INDEX 1 = n4  INDEX 2 = n7
+
+               n7
+
+f1.n1       1.000
+f2.n1       1.000
+
+INDEX 1 = n5  INDEX 2 = n6
+
+               n6
+
+f1.n1       1.000
+f1.n2       1.000
+
+INDEX 1 = n5  INDEX 2 = n7
+
+               n7
+
+f1.n2       1.000
+f2.n2       1.000
+
+
+----    104 VARIABLE z.L                   =       20.000  Objective function
+
+
+EXECUTION TIME       =        0.173 SECONDS      4 MB  37.1.0 r07954d5 DEX-DEG
+
+
+USER: GAMS Community License for Gabriel Beltran     G220127|0002AO-GEN
+      Universidad de los Andes, Computer Science                 CL2376
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      /Users/Gabriel/Documents/Optimizacion/Laboratios/Lab2/Ejercicio2.gms
+Output     /Users/Gabriel/Documents/Optimizacion/Laboratios/Lab2/Ejercicio2.lst
